@@ -1,3 +1,0 @@
-{"env_id": "browsergym/miniwob.click-button", "initial": {"url": "http://127.0.0.1:8000/miniwob/click-button.html", "goal": "Click on the \"Ok\" button.", "focused_element_bid": "8"}, "steps": [], "final": {"reason": "stop", "t": 0}}
-{"env_id": "browsergym/miniwob.click-button", "initial": {"url": "http://127.0.0.1:8000/miniwob/click-button.html", "goal": "Click on the \"Next\" button.", "focused_element_bid": "8"}, "steps": [], "final": {"reason": "stop", "t": 0}}
-{"env_id": "browsergym/miniwob.click-button", "initial": {"url": "http://127.0.0.1:8000/miniwob/click-button.html", "goal": "Click on the \"Ok\" button.", "focused_element_bid": "8"}, "steps": [], "final": {"reason": "stop", "t": 0}}

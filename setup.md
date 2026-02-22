@@ -1,9 +1,9 @@
 
 
 make setup-miniwob
-this git clones miniwob
+this git clones miniwob and installs the html directory of test cases for the agent. The test dir isn't in the repo. 
 
-it sets .env which is not correct. It sets to a file under html
+it sets .env which is not correct. It sets to a file under the html subdirectory which has been created by the makefile
 
 cd to miniwob-plusplus/miniwob/html and start a python server
 python -m http.server 8000
