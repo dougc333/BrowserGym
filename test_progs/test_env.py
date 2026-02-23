@@ -37,68 +37,47 @@ def filter_axtree_json(node, valid_bids):
 
 import re
 
-import re
 
+# 
 def get_cleaned_axtree(obs):
     axtree_data = obs.get('axtree_object', {})
     nodes = axtree_data.get('nodes', [])
     extra_props = obs.get('extra_element_properties', {})
-
-    # 1. Create a set of valid BIDs for fast lookup
-    valid_bids = {
-        str(bid) for bid, props in extra_props.items() 
-        if props.get("visible", False) or props.get("clickable", False)
-    }
-
-    # 2. Build a lookup map of {nodeId: node_dict}
+    valid_bids = {str(bid) for bid, props in extra_props.items() if props.get("visible", False)}
     node_map = {node['nodeId']: node for node in nodes}
 
-    # 3. Recursive helper to build the string
     def build_string(node_id, indent=0):
         node = node_map.get(node_id)
-        if not node:
-            return None
-        
-        # Skip nodes that are explicitly ignored by the browser
-        if node.get('ignored', False):
-            # But we still want to check their children!
-            # (Node 5 in your data is ignored but leads to the actual content)
-            child_results = []
-            for c_id in node.get('childIds', []):
-                res = build_string(c_id, indent) # Don't increase indent for ignored wrappers
-                if res: child_results.append(res)
-            return "\n".join(child_results) if child_results else None
+        if not node or node.get('ignored', False):
+            # Tunnel through ignored nodes
+            child_results = [build_string(c_id, indent) for c_id in node.get('childIds', [])]
+            return "\n".join(filter(None, child_results)) if child_results else None
 
-        # Extract values from the nested 'value' keys in your data
         role = node.get('role', {}).get('value', 'generic')
-        name = node.get('name', {}).get('value', '').strip()
         bg_id = node.get('browsergym_id')
         
-        # Create the line text
-        bid_str = f" [{bg_id}]" if bg_id else ""
+        # --- NEW: Enhanced Name Extraction ---
+        # 1. Try the computed name
+        name = node.get('name', {}).get('value', '').strip()
+        
+        # 2. If name is empty, look for a placeholder in properties
+        if not name:
+            for prop in node.get('properties', []):
+                if prop.get('name') in ['placeholder', 'aria-placeholder']:
+                    name = prop.get('value', {}).get('value', '').strip()
+                    break
+        
         name_str = f" '{name}'" if name else ""
+        bid_str = f" [{bg_id}]" if bg_id else ""
         current_line = f"{'  ' * indent}{role}{name_str}{bid_str}"
 
-        # Process children
-        child_results = []
-        for c_id in node.get('childIds', []):
-            res = build_string(c_id, indent + 1)
-            if res:
-                child_results.append(res)
-
-        # KEEP LOGIC: Keep this node if:
-        # It has a valid BID OR it has valid children
-        if (bg_id and str(bg_id) in valid_bids) or child_results:
-            return "\n".join([current_line] + child_results)
+        child_results = [build_string(c_id, indent + 1) for c_id in node.get('childIds', [])]
         
+        if (bg_id and str(bg_id) in valid_bids) or any(child_results):
+            return "\n".join([current_line] + list(filter(None, child_results)))
         return None
 
-    # Start from the first node (usually RootWebArea)
-    if not nodes:
-        return "Empty AXTree"
-    
-    final_tree = build_string(nodes[0]['nodeId'])
-    return final_tree if final_tree else "No visible actionable elements."
+    return build_string(nodes[0]['nodeId']) if nodes else "Empty Tree"
 
 env = gym.make(
     "browsergym/miniwob.click-button",
