@@ -38,70 +38,72 @@ def filter_axtree_json(node, valid_bids):
 import re
 
 
+import re
+
 def get_cleaned_axtree(obs):
-    """
-    Parses a flat Chromium AXTree into a readable, indented string.
-    Specifically handles 'ignored' nodes and retrieves placeholders as labels.
-    """
     axtree_data = obs.get('axtree_object', {})
     nodes = axtree_data.get('nodes', [])
     extra_props = obs.get('extra_element_properties', {})
-    
-    # 1. Convert BIDs to strings for reliable matching with node data
-    valid_bids = {str(bid) for bid, p in extra_props.items() if p.get("visible", False)}
-    
-    # 2. Create a lookup map for the flat list of nodes
+
+    # 1. Create a set of valid BIDs for fast lookup
+    valid_bids = {
+        str(bid) for bid, props in extra_props.items() 
+        if props.get("visible", False) or props.get("clickable", False)
+    }
+
+    # 2. Build a lookup map of {nodeId: node_dict}
     node_map = {node['nodeId']: node for node in nodes}
 
+    # 3. Recursive helper to build the string
     def build_string(node_id, indent=0):
         node = node_map.get(node_id)
         if not node:
             return None
         
-        # Pull BID safely
-        bg_id = node.get('browsergym_id')
-        str_bg_id = str(bg_id) if bg_id is not None else None
-        
-        # Recursive step: get children's strings first
-        child_lines = []
-        for c_id in node.get('childIds', []):
-            # If current node is 'ignored', don't increase indent for children
-            next_indent = indent if node.get('ignored', False) else indent + 1
-            res = build_string(c_id, next_indent)
-            if res:
-                child_lines.append(res)
-
-        # PRUNING LOGIC
-        # If node is 'ignored', we act as a transparent bridge to its children
+        # Skip nodes that are explicitly ignored by the browser
         if node.get('ignored', False):
-            return "\n".join(child_lines) if child_lines else None
+            # But we still want to check their children!
+            # (Node 5 in your data is ignored but leads to the actual content)
+            child_results = []
+            for c_id in node.get('childIds', []):
+                res = build_string(c_id, indent) # Don't increase indent for ignored wrappers
+                if res: child_results.append(res)
+            return "\n".join(child_results) if child_results else None
 
-        # Determine the name (Primary: Name field | Fallback: Placeholder)
+        # Extract values from the nested 'value' keys in your data
+        role = node.get('role', {}).get('value', 'generic')
         name = node.get('name', {}).get('value', '').strip()
-        if not name:
-            for prop in node.get('properties', []):
-                if prop.get('name') in ['placeholder', 'aria-placeholder']:
-                    name = prop.get('value', {}).get('value', '').strip()
-                    break
+        bg_id = node.get('browsergym_id')
+        
+        # Create the line text
+        bid_str = f" [{bg_id}]" if bg_id else ""
+        name_str = f" '{name}'" if name else ""
+        current_line = f"{'  ' * indent}{role}{name_str}{bid_str}"
 
-        # KEEP CRITERIA: Keep if it has a valid BID or has valid children
-        if str_bg_id in valid_bids or child_lines:
-            role = node.get('role', {}).get('value', 'generic')
-            
-            # Formatting
-            name_part = f" '{name}'" if name else ""
-            bid_part = f" [{str_bg_id}]" if str_bg_id else ""
-            current_line = f"{'  ' * indent}{role}{name_part}{bid_part}"
-            
-            return "\n".join([current_line] + child_lines)
+        # Process children
+        child_results = []
+        for c_id in node.get('childIds', []):
+            res = build_string(c_id, indent + 1)
+            if res:
+                child_results.append(res)
+
+        # KEEP LOGIC: Keep this node if:
+        # It has a valid BID OR it has valid children
+        if (bg_id and str(bg_id) in valid_bids) or child_results:
+            return "\n".join([current_line] + child_results)
         
         return None
 
+    # Start from the first node (usually RootWebArea)
     if not nodes:
         return "Empty AXTree"
+    
+    final_tree = build_string(nodes[0]['nodeId'])
+    return final_tree if final_tree else "No visible actionable elements."
 
-    # Start recursion from the root node
-    return build_string(nodes[0]['nodeId'])
+
+
+
 
 env = gym.make(
     "browsergym/miniwob.click-button",
