@@ -7,6 +7,40 @@ from PIL import Image
 import io
 
 
+def get_cleaned_axtree(obs):
+    """
+    Filters the AXTree to only include elements that BrowserGym 
+    identifies as 'visible' or 'clickable' in the extra properties.
+    """
+    axtree_text = obs.get('axtree_object', "")
+    extra_props = obs.get('extra_element_properties', {})
+    
+    # Identify BIDs that are actually useful
+    # We keep elements that are visible, even if not clickable (for context)
+    valid_bids = {
+        bid for bid, props in extra_props.items() 
+        if props.get("visible", False)
+    }
+
+    lines = axtree_text.split('\n')
+    cleaned_lines = []
+
+    for line in lines:
+        # Extract the [bid] from the line (e.g., "[12] button 'Submit'")
+        import re
+        match = re.search(r'\[(\d+)\]', line)
+        
+        if match:
+            bid = match.group(1)
+            # Only keep the line if the BID is in our valid/visible set
+            if bid in valid_bids:
+                cleaned_lines.append(line)
+        else:
+            # Keep lines that don't have a BID (like "RootWebArea") for structure
+            cleaned_lines.append(line)
+
+    return "\n".join(cleaned_lines)
+
 env = gym.make(
     "browsergym/miniwob.click-button",
     headless=True,
@@ -34,6 +68,8 @@ print("--------------------------------")
 print(f"obs['dom_object']:{obs['dom_object']}")
 print("--------------------------------")
 print(f"obs['axtree_object']:{obs['axtree_object']}")
+print("--------------------------------")
+print(f"cleaned axtree: {get_cleaned_axtree(obs)}")
 print("--------------------------------")
 print(f"obs['extra_element_properties']:{obs['extra_element_properties']}")
 print("--------------------------------")

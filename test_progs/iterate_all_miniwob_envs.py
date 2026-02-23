@@ -72,7 +72,6 @@ def run_env(env_id, max_steps=2):
             bid = np.random.choice(clickable)
 
             action = f"click('{bid}')"
-
         obs, reward, terminated, truncated, info = env.step(action)
 
         total_reward += reward
