@@ -38,47 +38,54 @@ def filter_axtree_json(node, valid_bids):
 import re
 
 def get_cleaned_axtree(obs):
-    axtree_obj = obs.get('axtree_object', {})
+    axtree_data = obs.get('axtree_object', {})
+    nodes = axtree_data.get('nodes', [])
     extra_props = obs.get('extra_element_properties', {})
-    
-    # 1. Identify all BIDs that are actually visible/clickable
-    # Use strings for keys to avoid type-mismatch errors
+
+    # 1. Identify valid BIDs from extra properties
     valid_bids = {
         str(bid) for bid, props in extra_props.items() 
         if props.get("visible", False) or props.get("clickable", False)
     }
 
-    # 2. Recursive helper to build a cleaned string from the JSON tree
-    def build_tree_string(node, indent=0):
-        # Extract BID from the node (BrowserGym usually uses 'bid' as the key)
-        node_bid = node.get('bid')
-        str_bid = str(node_bid) if node_bid is not None else None
+    # 2. Create a lookup table for quick node access
+    node_map = {node['nodeId']: node for node in nodes}
+
+    def format_node(node_id, indent=0):
+        node = node_map.get(node_id)
+        if not node or node.get('ignored', False):
+            return None
+
+        # Extract semantics
+        role = node.get('role', {}).get('value', 'generic')
+        name = node.get('name', {}).get('value', '').strip()
+        bg_id = node.get('browsergym_id')
         
-        # Determine if we should keep this node
-        # We keep it if it has a valid BID or if it's a structural parent
-        has_children = len(node.get('children', [])) > 0
-        
-        # Prepare the current line text
-        role = node.get('role', 'Generic')
-        name = node.get('name', '').strip()
-        name_str = f' "{name}"' if name else ""
-        bid_str = f' [{str_bid}]' if str_bid else ""
-        
+        # Format the line
+        bid_str = f" [{bg_id}]" if bg_id else ""
+        name_str = f" '{name}'" if name else ""
         current_line = f"{'  ' * indent}{role}{name_str}{bid_str}"
 
-        # Recursively process children
+        # Recursively handle children
         child_lines = []
-        for child in node.get('children', []):
-            child_text = build_tree_string(child, indent + 1)
-            if child_text: # Only add if the child wasn't pruned
+        for c_id in node.get('childIds', []):
+            child_text = format_node(c_id, indent + 1)
+            if child_text:
                 child_lines.append(child_text)
 
-        # PRUNING LOGIC: 
-        # Keep node if it's a valid BID, OR it has valid children
-        if str_bid in valid_bids or child_lines:
+        # PRUNING: Only keep the node if it has a BID we care about OR has valid children
+        if str(bg_id) in valid_bids or child_lines:
             return "\n".join([current_line] + child_lines)
+        
         return None
 
+    # 3. Find the Root node (usually nodeId '2' or first node) to start
+    root_id = nodes[0]['nodeId'] if nodes else None
+    if not root_id:
+        return "No nodes found."
+
+    result = format_node(root_id)
+    return result if result else "No visible elements found."
     # 3. Start the process from the root
     cleaned_string = build_tree_string(axtree_obj)
     return cleaned_string if cleaned_string else "No visible elements found."
