@@ -52,22 +52,6 @@ def run_env(env_id, max_steps=2):
     )
 
     obs, info = env.reset()
-    print(f"obs: {type(obs)}")
-    print(f"obs keys: {obs.keys()}")
-    print(f"info: {type(info)}")
-    print(f"info keys: {info.keys()}")
-    print("--------------------------------")
-    goal = obs.get("goal", "")
-    print("GOAL:", goal)
-    axtree = obs.get('axtree_object')
-    print(f"axtree: {type(axtree)}")
-    print(f"axtree keys: {axtree.keys()}")
-    print(f"axtree: {axtree}")
-    print("--------------------------------")
-    print(f"screenshot shape: {obs.get('screenshot').shape}")
-    img = Image.fromarray(obs['screenshot'])
-    img_byte_arr = io.BytesIO()
-    img.save(img_byte_arr, format='PNG')
     total_reward = 0
 
     for t in range(max_steps):
