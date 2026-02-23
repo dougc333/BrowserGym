@@ -1,0 +1,9 @@
+ACTION := CLICK(id)
+        | TYPE(id, text)
+        | SCROLL(direction, amount)
+        | WAIT(ms)
+
+id := browsergym_id  (preferred)  OR nodeId (fallback)
+
+Clickable if: role ∈ {button, link, checkbox, radio, menuitem, tab}
+Typeable  if: role ∈ {textbox, searchbox, combobox} AND editable=true AND not readonly

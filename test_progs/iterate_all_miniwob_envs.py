@@ -52,6 +52,9 @@ def run_env(env_id, max_steps=2):
     )
 
     obs, info = env.reset()
+    print(f"goal: {obs.get('goal')}")
+    print(f"chat_messages: {obs['chat_messages']}")
+    print(f"screenshot shape: {obs['screenshot'].shape}")
     total_reward = 0
 
     for t in range(max_steps):

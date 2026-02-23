@@ -1,0 +1,26 @@
+Best practice: 3 layers
+	1.	Prompt-level semantics (tell the model what’s allowed)
+	•	Put hard rules right next to the grammar.
+	•	Provide a filtered UI list that already encodes the semantics (“these IDs are clickable/typeable”).
+	2.	Schema-level semantics (make illegal actions unrepresentable)
+	•	If you can, use a structured output format (JSON schema / function call) where:
+	•	action_type is an enum
+	•	id must be one of the provided IDs
+	•	This removes a lot of “invented button” failure modes.
+	3.	Runtime semantics (authoritative)
+	•	Your controller checks: role, editable, visible, enabled, etc.
+	•	If invalid, reject and ask the model again with an error message + updated UI state.
+
+
+  Allowed actions:
+- CLICK(id) where id ∈ {13,15,17}
+- TYPE(id,text) where id ∈ {19,21}
+
+UI:
+13 | button  | "no"
+15 | button  | "Ok"
+17 | button  | "submit"
+19 | textbox | "" | editable
+21 | textbox | "" | editable
+
+Return exactly one action.
