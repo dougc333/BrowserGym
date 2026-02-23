@@ -35,74 +35,147 @@ def filter_axtree_json(node, valid_bids):
     return None # Prune this branch
 
 
-import re
 
 
 import re
+
+# def get_cleaned_axtree(obs):
+#     axtree_data = obs.get('axtree_object', {})
+#     nodes = axtree_data.get('nodes', [])
+#     extra_props = obs.get('extra_element_properties', {})
+
+#     # 1. Create a set of valid BIDs for fast lookup
+#     valid_bids = {
+#         str(bid) for bid, props in extra_props.items() 
+#         if props.get("visible", False) or props.get("clickable", False)
+#     }
+
+#     # 2. Build a lookup map of {nodeId: node_dict}
+#     node_map = {node['nodeId']: node for node in nodes}
+
+#     # 3. Recursive helper to build the string
+#     def build_string(node_id, indent=0):
+#         node = node_map.get(node_id)
+#         if not node:
+#             return None
+        
+#         # Skip nodes that are explicitly ignored by the browser
+#         if node.get('ignored', False):
+#             # But we still want to check their children!
+#             # (Node 5 in your data is ignored but leads to the actual content)
+#             child_results = []
+#             for c_id in node.get('childIds', []):
+#                 res = build_string(c_id, indent) # Don't increase indent for ignored wrappers
+#                 if res: child_results.append(res)
+#             return "\n".join(child_results) if child_results else None
+
+#         # Extract values from the nested 'value' keys in your data
+#         role = node.get('role', {}).get('value', 'generic')
+#         name = node.get('name', {}).get('value', '').strip()
+#         bg_id = node.get('browsergym_id')
+        
+#         # Create the line text
+#         bid_str = f" [{bg_id}]" if bg_id else ""
+#         name_str = f" '{name}'" if name else ""
+#         current_line = f"{'  ' * indent}{role}{name_str}{bid_str}"
+
+#         # Process children
+#         child_results = []
+#         for c_id in node.get('childIds', []):
+#             res = build_string(c_id, indent + 1)
+#             if res:
+#                 child_results.append(res)
+
+#         # KEEP LOGIC: Keep this node if:
+#         # It has a valid BID OR it has valid children
+#         if (bg_id and str(bg_id) in valid_bids) or child_results:
+#             return "\n".join([current_line] + child_results)
+        
+#         return None
+
+#     # Start from the first node (usually RootWebArea)
+#     if not nodes:
+#         return "Empty AXTree"
+    
+#     final_tree = build_string(nodes[0]['nodeId'])
+#     return final_tree if final_tree else "No visible actionable elements."
+
 
 def get_cleaned_axtree(obs):
     axtree_data = obs.get('axtree_object', {})
     nodes = axtree_data.get('nodes', [])
     extra_props = obs.get('extra_element_properties', {})
 
-    # 1. Create a set of valid BIDs for fast lookup
-    valid_bids = {
-        str(bid) for bid, props in extra_props.items() 
-        if props.get("visible", False) or props.get("clickable", False)
-    }
-
-    # 2. Build a lookup map of {nodeId: node_dict}
+    # 1. Map BIDs to strings and keep track of valid ones
+    valid_bids = {str(bid) for bid, p in extra_props.items() if p.get("visible", False)}
     node_map = {node['nodeId']: node for node in nodes}
 
-    # 3. Recursive helper to build the string
-    def build_string(node_id, indent=0):
+    actionable_elements = []
+
+    def build_tree(node_id, level=0):
         node = node_map.get(node_id)
         if not node:
-            return None
+            return False
         
-        # Skip nodes that are explicitly ignored by the browser
+        # Tunnel through 'ignored' nodes without increasing level
         if node.get('ignored', False):
-            # But we still want to check their children!
-            # (Node 5 in your data is ignored but leads to the actual content)
-            child_results = []
+            has_valid_child = False
             for c_id in node.get('childIds', []):
-                res = build_string(c_id, indent) # Don't increase indent for ignored wrappers
-                if res: child_results.append(res)
-            return "\n".join(child_results) if child_results else None
+                if build_tree(c_id, level):
+                    has_valid_child = True
+            return has_valid_child
 
-        # Extract values from the nested 'value' keys in your data
+        # --- Data Extraction ---
         role = node.get('role', {}).get('value', 'generic')
         name = node.get('name', {}).get('value', '').strip()
         bg_id = node.get('browsergym_id')
-        
-        # Create the line text
-        bid_str = f" [{bg_id}]" if bg_id else ""
-        name_str = f" '{name}'" if name else ""
-        current_line = f"{'  ' * indent}{role}{name_str}{bid_str}"
+        str_bg_id = str(bg_id) if bg_id is not None else None
 
-        # Process children
-        child_results = []
+        # Fallback to placeholder/labels if name is empty
+        if not name:
+            for prop in node.get('properties', []):
+                if prop.get('name') in ['placeholder', 'aria-placeholder', 'aria-label']:
+                    name = prop.get('value', {}).get('value', '').strip()
+                    break
+
+        # Calculate Center Point (if bbox exists)
+        center_point = None
+        bbox = extra_props.get(str_bg_id, {}).get('bounding_box')
+        if bbox:
+            center_point = {
+                "x": round(bbox['x'] + (bbox['width'] / 2), 2),
+                "y": round(bbox['y'] + (bbox['height'] / 2), 2)
+            }
+
+        # Create the element record
+        element_entry = {
+            "role": role,
+            "name": name,
+            "bid": str_bg_id,
+            "level": level,
+            "center": center_point,
+            "bbox": bbox
+        }
+
+        # --- Recursive Descent ---
+        start_count = len(actionable_elements)
         for c_id in node.get('childIds', []):
-            res = build_string(c_id, indent + 1)
-            if res:
-                child_results.append(res)
-
-        # KEEP LOGIC: Keep this node if:
-        # It has a valid BID OR it has valid children
-        if (bg_id and str(bg_id) in valid_bids) or child_results:
-            return "\n".join([current_line] + child_results)
+            build_tree(c_id, level + 1)
         
-        return None
+        has_valid_children = len(actionable_elements) > start_count
 
-    # Start from the first node (usually RootWebArea)
-    if not nodes:
-        return "Empty AXTree"
+        # --- Pruning Logic ---
+        if str_bg_id in valid_bids or has_valid_children:
+            # Insert parent before its children to maintain top-down order
+            actionable_elements.insert(start_count, element_entry)
+            return True
+        
+        return False
+
+    if nodes:
+        build_tree(nodes[0]['nodeId'])
     
-    final_tree = build_string(nodes[0]['nodeId'])
-    return final_tree if final_tree else "No visible actionable elements."
-
-
-
+    return actionable_elements
 
 
 env = gym.make(
