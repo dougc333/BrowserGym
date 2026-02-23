@@ -6,40 +6,83 @@ import ollama
 from PIL import Image
 import io
 
+def filter_axtree_json(node, valid_bids):
+    """
+    Recursively filters a JSON-style AXTree to only include 
+    nodes that have a BID in the valid_bids set.
+    """
+    # 1. Check if this node itself has a BID and if that BID is valid
+    # BrowserGym nodes usually store the BID in a 'bid' or 'browsergym_id' key
+    node_bid = str(node.get('bid', ''))
+    
+    # 2. Recursively filter children first
+    children = node.get('children', [])
+    filtered_children = [filter_axtree_json(child, valid_bids) for child in children]
+    
+    # Remove None values from the children list
+    filtered_children = [c for c in filtered_children if c is not None]
+    
+    # 3. Decision Logic: Keep this node if...
+    # - It has a valid BID
+    # - OR it has children that are valid (to keep the structure alive)
+    # - OR it's a structural node (like RootWebArea) with no BID
+    if node_bid in valid_bids or filtered_children or not node_bid:
+        # Create a copy of the node with only the filtered children
+        new_node = node.copy()
+        new_node['children'] = filtered_children
+        return new_node
+    
+    return None # Prune this branch
+
+
+import re
 
 def get_cleaned_axtree(obs):
-    """
-    Filters the AXTree to only include elements that BrowserGym 
-    identifies as 'visible' or 'clickable' in the extra properties.
-    """
-    axtree_text = obs.get('axtree_object', "")
+    axtree_obj = obs.get('axtree_object', {})
     extra_props = obs.get('extra_element_properties', {})
     
-    # Identify BIDs that are actually useful
-    # We keep elements that are visible, even if not clickable (for context)
+    # 1. Identify all BIDs that are actually visible/clickable
+    # Use strings for keys to avoid type-mismatch errors
     valid_bids = {
-        bid for bid, props in extra_props.items() 
-        if props.get("visible", False)
+        str(bid) for bid, props in extra_props.items() 
+        if props.get("visible", False) or props.get("clickable", False)
     }
 
-    lines = axtree_text.split('\n')
-    cleaned_lines = []
-
-    for line in lines:
-        # Extract the [bid] from the line (e.g., "[12] button 'Submit'")
-        import re
-        match = re.search(r'\[(\d+)\]', line)
+    # 2. Recursive helper to build a cleaned string from the JSON tree
+    def build_tree_string(node, indent=0):
+        # Extract BID from the node (BrowserGym usually uses 'bid' as the key)
+        node_bid = node.get('bid')
+        str_bid = str(node_bid) if node_bid is not None else None
         
-        if match:
-            bid = match.group(1)
-            # Only keep the line if the BID is in our valid/visible set
-            if bid in valid_bids:
-                cleaned_lines.append(line)
-        else:
-            # Keep lines that don't have a BID (like "RootWebArea") for structure
-            cleaned_lines.append(line)
+        # Determine if we should keep this node
+        # We keep it if it has a valid BID or if it's a structural parent
+        has_children = len(node.get('children', [])) > 0
+        
+        # Prepare the current line text
+        role = node.get('role', 'Generic')
+        name = node.get('name', '').strip()
+        name_str = f' "{name}"' if name else ""
+        bid_str = f' [{str_bid}]' if str_bid else ""
+        
+        current_line = f"{'  ' * indent}{role}{name_str}{bid_str}"
 
-    return "\n".join(cleaned_lines)
+        # Recursively process children
+        child_lines = []
+        for child in node.get('children', []):
+            child_text = build_tree_string(child, indent + 1)
+            if child_text: # Only add if the child wasn't pruned
+                child_lines.append(child_text)
+
+        # PRUNING LOGIC: 
+        # Keep node if it's a valid BID, OR it has valid children
+        if str_bid in valid_bids or child_lines:
+            return "\n".join([current_line] + child_lines)
+        return None
+
+    # 3. Start the process from the root
+    cleaned_string = build_tree_string(axtree_obj)
+    return cleaned_string if cleaned_string else "No visible elements found."
+
 
 env = gym.make(
     "browsergym/miniwob.click-button",
