@@ -39,7 +39,7 @@ def get_all_miniwob_env_ids():
 # -----------------------------
 # Run one environment
 # -----------------------------
-def run_env(env_id, max_steps=20):
+def run_env(env_id, max_steps=2):
     print("\n==============================")
     print("ENV:", env_id)
 
@@ -50,10 +50,14 @@ def run_env(env_id, max_steps=20):
     )
 
     obs, info = env.reset()
-
+    print(f"obs: {type(obs)}")
+    print(f"obs keys: {obs.keys()}")
+    print(f"info: {type(info)}")
+    print(f"info keys: {info.keys()}")
+    print("--------------------------------")
     goal = obs.get("goal", "")
     print("GOAL:", goal)
-
+    print(f"screenshot shape: {obs.get('screenshot').shape}")
     total_reward = 0
 
     for t in range(max_steps):
@@ -69,6 +73,7 @@ def run_env(env_id, max_steps=20):
             action = "click('0')"
         else:
             bid = np.random.choice(clickable)
+
             action = f"click('{bid}')"
 
         obs, reward, terminated, truncated, info = env.step(action)
