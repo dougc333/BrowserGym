@@ -38,53 +38,65 @@ def filter_axtree_json(node, valid_bids):
 import re
 
 
-# 
 def get_cleaned_axtree(obs):
     axtree_data = obs.get('axtree_object', {})
     nodes = axtree_data.get('nodes', [])
     extra_props = obs.get('extra_element_properties', {})
     
-    # 1. Force all BIDs to strings for consistent matching
+    # 1. Map BIDs to strings for consistent matching
     valid_bids = {str(bid) for bid, p in extra_props.items() if p.get("visible", False)}
     node_map = {node['nodeId']: node for node in nodes}
 
     def build_string(node_id, indent=0):
         node = node_map.get(node_id)
-        if not node: return None
+        if not node:
+            return None
         
-        # Extract BID safely as a string
+        # Pull ID and check if it's actionable
         bg_id = node.get('browsergym_id')
         str_bg_id = str(bg_id) if bg_id is not None else None
+        is_actionable = str_bg_id in valid_bids
 
-        # Handle 'ignored' nodes (like your Node 5) by jumping straight to children
+        # --- RECURSIVE STEP FIRST ---
+        # We check children first to see if this branch is worth keeping
+        child_lines = []
+        for c_id in node.get('childIds', []):
+            # If current node is 'ignored', don't increase indent for children
+            next_indent = indent if node.get('ignored', False) else indent + 1
+            res = build_string(c_id, next_indent)
+            if res:
+                child_lines.append(res)
+
+        # --- PRUNING LOGIC ---
+        # If the node is 'ignored', we only return the children's text
         if node.get('ignored', False):
-            child_results = [build_string(c_id, indent) for c_id in node.get('childIds', [])]
-            return "\n".join(filter(None, child_results)) if child_results else None
+            return "\n".join(child_lines) if child_lines else None
 
-        # Semantic Extraction
-        role = node.get('role', {}).get('value', 'generic')
-        
-        # Name/Label/Placeholder Extraction
-        name = node.get('name', {}).get('value', '').strip()
-        if not name: # Fallback to placeholder properties
-            for prop in node.get('properties', []):
-                if prop.get('name') in ['placeholder', 'aria-placeholder']:
-                    name = prop.get('value', {}).get('value', '').strip()
-                    break
-
-        line_text = f"{'  ' * indent}{role}{f' \'{name}\'' if name else ''}{f' [{str_bg_id}]' if str_bg_id else ''}"
-
-        # Recurse
-        child_lines = [build_string(c_id, indent + 1) for c_id in node.get('childIds', [])]
-        child_lines = list(filter(None, child_lines))
-
-        # Keep if it's actionable OR has actionable children
-        if (str_bg_id in valid_bids) or child_lines:
+        # If it's not ignored, we only keep it if it has a BID or has useful children
+        if is_actionable or child_lines:
+            role = node.get('role', {}).get('value', 'generic')
+            
+            # Extract name or placeholder
+            name = node.get('name', {}).get('value', '').strip()
+            if not name:
+                for prop in node.get('properties', []):
+                    if prop.get('name') in ['placeholder', 'aria-placeholder']:
+                        name = prop.get('value', {}).get('value', '').strip()
+                        break
+            
+            # Format current line
+            line_text = f"{'  ' * indent}{role}{f' \'{name}\'' if name else ''}{f' [{str_bg_id}]' if str_bg_id else ''}"
             return "\n".join([line_text] + child_lines)
+        
         return None
 
-    if not nodes: return "No AXTree nodes found."
-    return build_string(nodes[0]['nodeId'])
+    if not nodes:
+        return "Empty AXTree"
+    
+    # Start from the root (Node 2)
+    result = build_string(nodes[0]['nodeId'])
+    return result if result else "No visible actionable elements found."
+
 
 env = gym.make(
     "browsergym/miniwob.click-button",
