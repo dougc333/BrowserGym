@@ -209,7 +209,7 @@ print("--------------------------------")
 print("--------------------------------")
 foo = get_cleaned_axtree(obs)
 print(f"type cleaned axtree: {type(foo)}")
-
+print(f"cleaned axtree: {foo}")
 print("--------------------------------")
 print("--------------------------------")
 # print("--------------------------------")
