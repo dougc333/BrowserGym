@@ -1,26 +1,18 @@
-
 import ollama
-# run as colab cli python program
 import gymnasium as gym
 import browsergym.miniwob
-import numpy as np
-import ollama
 from PIL import Image
 import io
-import json
-
-# Use the "Colab Server is LIVE at" URL from your Colab output
-COLAB_NGROK_URL = 'https://labrador-fair-trivially.ngrok-free.app'
-
+import httpx
 
 class TestColabQwenAxtree:
     def __init__(self):
-      self.client = ollama.Client(
-        host=COLAB_NGROK_URL,
-        headers={'ngrok-skip-browser-warning': 'true'},
-        timeout=ollama.Timeout(120.0, connect=60.0) 
-      )
-      self.messages = []
+        self.client = ollama.Client(
+            host='http://localhost:11434',
+            # We increase this to 300 (5 mins) just in case, 
+            # but streaming will mostly solve the timeout issue.
+            timeout=300.0 
+        )
  
     def test_colabqwen_axtree(self):
         env = gym.make(
@@ -30,52 +22,42 @@ class TestColabQwenAxtree:
         )
         obs, info = env.reset(seed=0)
         
-        # 1. Prepare data
-        #axtree_str = json.dumps(obs.get('axtree_object'))
-        goal = obs.get('goal')
-        
-        # 2. Convert NumPy screenshot to Bytes
-        screenshot_np = obs.get('screenshot')
-        img = Image.fromarray(screenshot_np)
+        # 1. Prepare Screenshot
+        img = Image.fromarray(obs.get('screenshot'))
         img_byte_arr = io.BytesIO()
-        img.save(img_byte_arr, format='PNG')
+        # Using JPEG with slightly lower quality reduces the data 
+        # the model has to "read," making it faster.
+        img.save(img_byte_arr, format='JPEG', quality=80)
         img_bytes = img_byte_arr.getvalue()
 
-        # 3. Create a clean prompt string
-        #f"AXTree: {axtree_str}\n\n"
+        # 2. Optimized Prompt
         prompt = (
-            f"Goal: {goal}\n\n"
-            "Task: Extract the buttons from thescreenshot and draw a red 1px border around each button and return response as svg."
+            f"Goal: {obs.get('goal')}\n"
+            "Find every button in this image. "
+            "Return an SVG string containing only the <rect> elements with red 10px borders "
+            "that perfectly overlay each button found."
         )
 
-        # 4. Clear and rebuild messages correctly
-        self.messages = [{
-            'role': 'user',
-            'content': prompt,
-            'images': [img_bytes]  # Ollama accepts bytes directly
-        }]
+        print("--- Sending to Qwen3-VL (Streaming) ---")
+        
+        try:
+            # 3. Use Streaming to prevent ReadTimeout
+            stream = self.client.chat(
+                model='qwen3-vl',
+                messages=[{'role': 'user', 'content': prompt, 'images': [img_bytes]}],
+                stream=True
+            )
 
-        response = self.client.chat(
-            model='qwen3-vl',
-            messages=self.messages,
-            stream=True
-        )
+            for chunk in stream:
+                content = chunk['message']['content']
+                print(content, end='', flush=True)
+            print("\n--- Done ---")
 
-        print(response['message']['content'])
+        except httpx.ReadTimeout:
+            print("\nError: The model took too long to start responding. Check Colab GPU usage.")
+        except Exception as e:
+            print(f"\nError: {e}")
 
-
-    def test_image(self):
-        response = self.client.chat(
-        model='qwen3-vl',
-        messages=[{
-            'role': 'user',
-            'content': 'What is written in this image?',
-            'images': ['buttonclick.png'] # Use the local path on your Mac
-          }]
-        )
-        print("Response from Colab:")
-        print(response['message']['content'])
-    
-
-t =  TestColabQwenAxtree()
-t.test_colabqwen_axtree()
+if __name__ == "__main__":
+    t = TestColabQwenAxtree()
+    t.test_colabqwen_axtree()
