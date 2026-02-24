@@ -17,7 +17,7 @@ class TestColabQwenAxtree:
     def __init__(self):
       self.client = ollama.Client(
         host='http://localhost:11434',
-        timeout={'connect': 60.0, 'read': 120.0}
+        timeout=180.0
       )
       self.messages = []
  
