@@ -15,7 +15,7 @@ try:
         messages=[{
             'role': 'user',
             'content': 'draw a red line 10px wide from 10,10 to 100,100 in this image',
-            'images': ['/Users/dc/BrowserGym/test_progs/buttonclick.png'] # Use the local path on your Mac
+            'images': ['buttonclick.png'] # Use the local path on your Mac
         }]
     )
     print("Response from Colab:")
