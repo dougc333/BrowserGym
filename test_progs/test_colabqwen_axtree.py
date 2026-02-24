@@ -18,28 +18,34 @@ class TestColabQwenAxtree:
         host=COLAB_NGROK_URL,
         headers={'ngrok-skip-browser-warning': 'true'}
       )
-      self.prompt = """
-      You are a helpful assistant that can answer questions and help with tasks.
-      You are given an axtree and a goal.
-      You need to return the next action to take.
-      """
-      self.messages = [
-        {
-            'role': 'user',
-            'content': self.prompt
-        }
-      ]
+ 
 
     def test_colabqwen_axtree(self):
-        pass
+        env = gym.make(
+            "browsergym/miniwob.click-button",
+            headless=True,
+            disable_env_checker=True,
+        )
+        obs, info = env.reset(seed=0)
+        axtree = obs.get('axtree_object')
 
-    def request(self):
+        self.messages.append({
+            'role': 'user',
+            'content': axtree
+        })
+
+        response = self.client.chat(
+            model='qwen3-vl',
+            messages=self.messages
+        )
+
+    def test_image(self):
         response = self.client.chat(
         model='qwen3-vl',
         messages=[{
             'role': 'user',
             'content': 'What is written in this image?',
-            'images': ['/Users/dc/BrowserGym/test_progs/buttonclick.png'] # Use the local path on your Mac
+            'images': ['buttonclick.png'] # Use the local path on your Mac
           }]
         )
         print("Response from Colab:")
