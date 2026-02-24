@@ -39,6 +39,11 @@ class TestColabQwenAxtree:
             messages=self.messages
         )
 
+        print("Response from Colab test_colabqwen_axtree:")
+        print("response keys:", response.keys())
+        print("response['message'] keys:", response['message'].keys())
+        print(response['message']['content'])
+
     def test_image(self):
         response = self.client.chat(
         model='qwen3-vl',
@@ -51,3 +56,6 @@ class TestColabQwenAxtree:
         print("Response from Colab:")
         print(response['message']['content'])
     
+
+t =  TestColabQwenAxtree()
+t.test_colabqwen_axtree()
