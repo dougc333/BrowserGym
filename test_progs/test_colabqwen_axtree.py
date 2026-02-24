@@ -17,18 +17,11 @@ class TestColabQwenAxtree:
     def __init__(self):
       self.client = ollama.Client(
         host=COLAB_NGROK_URL,
-        headers={'ngrok-skip-browser-warning': 'true'}
+        headers={'ngrok-skip-browser-warning': 'true'},
+        timeout=ollama.Timeout(120.0, connect=60.0) 
       )
       self.messages = []
  
-
-    def extract_buttons_from_axtree(self, axtree):
-        buttons = []
-        for node in axtree['nodes']:
-            if node['type'] == 'button':
-                buttons.append(node)
-        return buttons
-
     def test_colabqwen_axtree(self):
         env = gym.make(
             "browsergym/miniwob.click-button",
@@ -38,7 +31,7 @@ class TestColabQwenAxtree:
         obs, info = env.reset(seed=0)
         
         # 1. Prepare data
-        axtree_str = json.dumps(obs.get('axtree_object'))
+        #axtree_str = json.dumps(obs.get('axtree_object'))
         goal = obs.get('goal')
         
         # 2. Convert NumPy screenshot to Bytes
@@ -49,10 +42,10 @@ class TestColabQwenAxtree:
         img_bytes = img_byte_arr.getvalue()
 
         # 3. Create a clean prompt string
+        #f"AXTree: {axtree_str}\n\n"
         prompt = (
             f"Goal: {goal}\n\n"
-            f"AXTree: {axtree_str}\n\n"
-            "Task: Extract the buttons from the AXTree and verify their positions in the screenshot by drawing a red 10px border around each button and return response as svg."
+            "Task: Extract the buttons from thescreenshot and draw a red 10px border around each button and return response as svg."
         )
 
         # 4. Clear and rebuild messages correctly
