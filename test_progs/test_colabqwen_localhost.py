@@ -17,8 +17,7 @@ class TestColabQwenAxtree:
     def __init__(self):
       self.client = ollama.Client(
         host='http://localhost:11434',
-        headers={'ngrok-skip-browser-warning': 'true'},
-        timeout=ollama.Timeout(120.0, connect=60.0) 
+        timeout={'connect': 60.0, 'read': 120.0}
       )
       self.messages = []
  
