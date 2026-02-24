@@ -29,10 +29,13 @@ class TestColabQwenAxtree:
         )
         obs, info = env.reset(seed=0)
         axtree = obs.get('axtree_object')
-
+        screenshot = obs.get('screenshot')
+        goal = obs.get('goal')
+        extended = obs['extra_element_properties']
+      
         import json
         axtree_str = json.dumps(axtree)
-        self.messages.append({'role': 'user', 'content': axtree_str})
+        self.messages.append({'role': 'user', 'content':'extract the buttons from axtree and return them in the response','axtree': axtree_str, 'screenshot': screenshot, 'goal': goal, 'extended': extended})
         
         response = self.client.chat(
             model='qwen3-vl',
