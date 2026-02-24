@@ -18,6 +18,7 @@ class TestColabQwenAxtree:
         host=COLAB_NGROK_URL,
         headers={'ngrok-skip-browser-warning': 'true'}
       )
+      self.messages = []
  
 
     def test_colabqwen_axtree(self):
@@ -29,11 +30,10 @@ class TestColabQwenAxtree:
         obs, info = env.reset(seed=0)
         axtree = obs.get('axtree_object')
 
-        self.messages.append({
-            'role': 'user',
-            'content': axtree
-        })
-
+        import json
+        axtree_str = json.dumps(axtree)
+        self.messages.append({'role': 'user', 'content': axtree_str})
+        
         response = self.client.chat(
             model='qwen3-vl',
             messages=self.messages
