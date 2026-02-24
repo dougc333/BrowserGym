@@ -45,7 +45,7 @@ class TestColabQwenAxtree:
         #f"AXTree: {axtree_str}\n\n"
         prompt = (
             f"Goal: {goal}\n\n"
-            "Task: Extract the buttons from thescreenshot and draw a red 10px border around each button and return response as svg."
+            "Task: Extract the buttons from thescreenshot and draw a red 1px border around each button and return response as svg."
         )
 
         # 4. Clear and rebuild messages correctly
@@ -57,7 +57,8 @@ class TestColabQwenAxtree:
 
         response = self.client.chat(
             model='qwen3-vl',
-            messages=self.messages
+            messages=self.messages,
+            stream=True
         )
 
         print(response['message']['content'])
