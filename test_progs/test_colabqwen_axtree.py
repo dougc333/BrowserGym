@@ -7,6 +7,7 @@ import numpy as np
 import ollama
 from PIL import Image
 import io
+import json
 
 # Use the "Colab Server is LIVE at" URL from your Colab output
 COLAB_NGROK_URL = 'https://labrador-fair-trivially.ngrok-free.app'
@@ -21,6 +22,13 @@ class TestColabQwenAxtree:
       self.messages = []
  
 
+    def extract_buttons_from_axtree(self, axtree):
+        buttons = []
+        for node in axtree['nodes']:
+            if node['type'] == 'button':
+                buttons.append(node)
+        return buttons
+
     def test_colabqwen_axtree(self):
         env = gym.make(
             "browsergym/miniwob.click-button",
@@ -28,24 +36,39 @@ class TestColabQwenAxtree:
             disable_env_checker=True,
         )
         obs, info = env.reset(seed=0)
-        axtree = obs.get('axtree_object')
-        screenshot = obs.get('screenshot')
-        goal = obs.get('goal')
-        extended = obs['extra_element_properties']
-      
-        import json
-        axtree_str = json.dumps(axtree)
-        self.messages.append({'role': 'user', 'content':'extract the buttons from axtree and return them in the response','axtree': axtree_str, 'screenshot': screenshot, 'goal': goal, 'extended': extended})
         
+        # 1. Prepare data
+        axtree_str = json.dumps(obs.get('axtree_object'))
+        goal = obs.get('goal')
+        
+        # 2. Convert NumPy screenshot to Bytes
+        screenshot_np = obs.get('screenshot')
+        img = Image.fromarray(screenshot_np)
+        img_byte_arr = io.BytesIO()
+        img.save(img_byte_arr, format='PNG')
+        img_bytes = img_byte_arr.getvalue()
+
+        # 3. Create a clean prompt string
+        prompt = (
+            f"Goal: {goal}\n\n"
+            f"AXTree: {axtree_str}\n\n"
+            "Task: Extract the buttons from the AXTree and verify their positions in the screenshot by drawing a red 10px border around each button and return response as svg."
+        )
+
+        # 4. Clear and rebuild messages correctly
+        self.messages = [{
+            'role': 'user',
+            'content': prompt,
+            'images': [img_bytes]  # Ollama accepts bytes directly
+        }]
+
         response = self.client.chat(
             model='qwen3-vl',
             messages=self.messages
         )
 
-        print("Response from Colab test_colabqwen_axtree:")
-        print("response keys:", response.keys())
-        print("response['message'] keys:", response['message'].keys())
         print(response['message']['content'])
+
 
     def test_image(self):
         response = self.client.chat(
