@@ -1,0 +1,2 @@
+browsergym/miniwob.click-menu
+
