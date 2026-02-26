@@ -4,7 +4,7 @@ import os, sys
 import gymnasium as gym
 import browsergym.miniwob  # noqa: F401
 ENV_ID = 'browsergym/miniwob.click-checkboxes'
-KNOWN_GOAL = 'Select cJUj, fGWU5A5, Z45A8v, RqM4hC and click Submit.'
+#KNOWN_GOAL = 'Select cJUj, fGWU5A5, Z45A8v, RqM4hC and click Submit.'
 ACTIONS = []
 def main() -> int:
     env_id = sys.argv[1] if len(sys.argv) > 1 else ENV_ID
@@ -13,8 +13,10 @@ def main() -> int:
     env = gym.make(env_id)
     try:
         obs, info = env.reset()
-        print(f"Goal: {(obs.get('goal') if isinstance(obs, dict) else KNOWN_GOAL)}")
+        print(f"Goal: {(obs.get('goal') if isinstance(obs, dict) else "no goal!!!")}")
         reward = None
+        # where are the targets?
+        
         for a in ACTIONS:
             print(f"Action: {a}")
             obs, reward, term, trunc, info = env.step(a)
