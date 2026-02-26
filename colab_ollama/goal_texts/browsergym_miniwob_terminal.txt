@@ -1,0 +1,1 @@
+Use the terminal below to delete a file ending with the extension .tar.gz

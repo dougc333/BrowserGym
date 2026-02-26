@@ -1,0 +1,1 @@
+Use the textbox to enter "Karrie" and press "Search", then find and click the 5th search result.

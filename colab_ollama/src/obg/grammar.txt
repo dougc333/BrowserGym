@@ -1,0 +1,88 @@
+ACTION := click(args) | dblclick(args) | hover(args) | scroll(args)
+        | fill(args) | press(args) | select_option(args) | clear(args)
+        | drag_and_drop(args) | focus(args) | goto(args)
+        | new_tab() | tab_focus(args) | tab_close(args)
+        | go_back() | go_forward() | upload_file(args)
+        | noop() | report_infeasible(args) | send_msg_to_user(args)
+
+
+
+        (browsergym-env) dc@dcs-MacBook-Pro colab_ollama % python - <<'PY'
+from browsergym.core.action.highlevel import HighLevelActionSet
+import browsergym.core.action.highlevel as hl
+import inspect
+
+aset = HighLevelActionSet()
+for name in aset.action_set.keys():
+    fn = getattr(hl, name, None)
+    if fn and callable(fn):
+        print(f"{name}{inspect.signature(fn)}")
+PY
+noop(wait_ms: float = 1000)
+send_msg_to_user(text: str)
+report_infeasible(reason: str)
+scroll(delta_x: float, delta_y: float)
+fill(bid: str, value: str, enable_autocomplete_menu: bool = False)
+select_option(bid: str, options: str | list[str])
+click(bid: str, button: Literal['left', 'middle', 'right'] = 'left', modifiers: list[typing.Literal['Alt', 'Control', 'ControlOrMeta', 'Meta', 'Shift']] = [])
+dblclick(bid: str, button: Literal['left', 'middle', 'right'] = 'left', modifiers: list[typing.Literal['Alt', 'Control', 'ControlOrMeta', 'Meta', 'Shift']] = [])
+hover(bid: str)
+press(bid: str, key_comb: str)
+focus(bid: str)
+clear(bid: str)
+drag_and_drop(from_bid: str, to_bid: str)
+upload_file(bid: str, file: str | list[str])
+go_back()
+go_forward()
+goto(url: str)
+tab_close()
+tab_focus(index: int)
+new_tab()
+
+
+You are a BrowserGym agent.
+
+You MUST output exactly:
+PLAN:
+- ...
+ACTION: <one action call>
+
+Only these actions are allowed (lowercase, exact):
+noop(wait_ms=1000)
+scroll(delta_x, delta_y)
+click(bid, button='left', modifiers=[])
+dblclick(bid, button='left', modifiers=[])
+hover(bid)
+fill(bid, value, enable_autocomplete_menu=False)
+press(bid, key_comb)
+focus(bid)
+clear(bid)
+select_option(bid, options)
+drag_and_drop(from_bid, to_bid)
+upload_file(bid, file)
+goto(url)
+go_back()
+go_forward()
+new_tab()
+tab_focus(index)
+tab_close()
+send_msg_to_user(text)
+report_infeasible(reason)
+
+Rules:
+- Use ONLY bids that appear in CLICKABLES.
+- Prefer click/hover/fill/press; use noop(wait_ms=...) instead of WAIT.
+
+
+ACTION_RE = re.compile(r"^ACTION:\s*([a-z_][a-z0-9_]*)\((.*)\)\s*$", re.MULTILINE)
+
+
+ALLOWED = {
+  "noop","send_msg_to_user","report_infeasible","scroll","fill","select_option",
+  "click","dblclick","hover","press","focus","clear","drag_and_drop","upload_file",
+  "go_back","go_forward","goto","tab_close","tab_focus","new_tab"
+}
+
+def validate_action(action: str) -> bool:
+    m = re.match(r"^\s*([a-z_][a-z0-9_]*)\(", action)
+    return bool(m and m.group(1) in ALLOWED)

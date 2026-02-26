@@ -1,14 +1,19 @@
 # src/obg/cli.py
 import json
-import os
 import shutil
 from pathlib import Path
-import numpy as np
 import typer
 import cv2
-import base64
 import subprocess
+import base64
+import browsergym 
+from collections import deque
+from typing import Any, Dict, List, Optional, Tuple
 
+import os, re, sys, subprocess
+import gymnasium as gym
+
+   
 app = typer.Typer()
 
 
@@ -221,12 +226,6 @@ def print_axtree(
     try:
         obs, info = env.reset()
 
-        # axtree = None
-        # if isinstance(obs, dict):
-        #     axtree = obs.get("axtree") or obs.get("ax_tree") or obs.get("accessibility_tree")
-        # if axtree is None and isinstance(info, dict):
-        #     axtree = info.get("axtree") or info.get("ax_tree") or info.get("accessibility_tree")
-
         axtree = None
         if isinstance(obs, dict):
             axtree = (
@@ -266,14 +265,6 @@ def print_axtree(
         env.close()
 
 
-# add near other imports at top of src/obg/cli.py
-import base64
-import subprocess
-
-import re
-from pathlib import Path
-import typer
-
 @app.command("save-screenshot")
 def save_screenshot(
     env_id: str = typer.Option(
@@ -292,13 +283,6 @@ def save_screenshot(
         help="Open the image after saving (macOS: open)",
     ),
 ):
-    """Reset a MiniWoB env and save the current screenshot to screenshots/<env>.png."""
-    import gymnasium as gym
-    import browsergym.miniwob  # registers envs
-    import numpy as np
-    import subprocess
-    import base64
-    import cv2
 
     # Friendly: drop -v0 if user passes it
     if env_id.endswith("-v0"):
@@ -400,6 +384,8 @@ def print_goal(
 
     finally:
         env.close()
+
+
 
 @app.command("list-buttons")
 def list_buttons(
@@ -696,66 +682,7 @@ def list_button_bboxes(
         env.close()
 
 
-# Add to src/obg/cli.py
 
-
-import json
-from collections import deque
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
-import os
-import re
-import sys
-import subprocess
-
-import os, re, sys, subprocess
-import typer
-
-def _normalize_task_from_env_id(env_id: str) -> str:
-    s = env_id.strip()
-    if s.endswith("-v0"):
-        s = s[:-3]
-    m = re.search(r"miniwob\.([A-Za-z0-9_-]+)$", s)
-    if m:
-        return m.group(1)
-    if "/" in s:
-        s = s.split("/")[-1]
-    if "." in s:
-        s = s.split(".")[-1]
-    return s
-
-def _miniwob_url_for_env(env_id: str) -> str:
-    base = os.environ.get("MINIWOB_URL", "").strip()
-    if not base:
-        raise typer.BadParameter(
-            'MINIWOB_URL is not set. Example:\n'
-            '  export MINIWOB_URL="http://127.0.0.1:8000/miniwob/"'
-        )
-    if not base.endswith("/"):
-        base += "/"
-    task = _normalize_task_from_env_id(env_id)
-    return base + (task if task.endswith(".html") else f"{task}.html")
-
-def _spawn_detached_webkit(url: str, width: int = 1400, height: int = 900) -> int:
-    child_code = r"""
-from playwright.sync_api import sync_playwright
-import sys, time
-url = sys.argv[1]
-w = int(sys.argv[2]); h = int(sys.argv[3])
-with sync_playwright() as p:
-    browser = p.webkit.launch(headless=False)
-    page = browser.new_page(viewport={"width": w, "height": h})
-    page.goto(url)
-    while True:
-        time.sleep(3600)
-"""
-    p = subprocess.Popen(
-        [sys.executable, "-c", child_code, url, str(width), str(height)],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        start_new_session=True,
-    )
-    return p.pid
 
 @app.command("expand-menu")
 def expand_menu(
@@ -777,18 +704,6 @@ def expand_menu(
     - saves screenshots and prints newly revealed submenu items
     - solves 'Select A>B>...' goal paths
     """
-    import os
-    import re
-    import sys
-    import subprocess
-    from pathlib import Path
-    from typing import Any, Dict, List, Tuple
-
-    import gymnasium as gym
-    import browsergym.miniwob  # registers envs
-    import numpy as np
-    import cv2
-
     # ----------------- small helpers -----------------
     def safe_name(s: str) -> str:
         return re.sub(r"[^A-Za-z0-9._-]+", "_", s).strip("_")
@@ -1138,66 +1053,166 @@ with sync_playwright() as p:
     finally:
         env.close()
 
-
-@app.command("dump-dom")
-def dump_dom(
-    env_id: str = typer.Option(
-        "browsergym/miniwob.click-menu",
-        "--env",
-        help="BrowserGym env id (default: click-menu)",
-    ),
-    out_dir: Path = typer.Option(
-        Path("dom_dumps"),
-        "--out-dir",
-        help="Directory to write the DOM dump",
-    ),
+@app.command("list-actions")
+def list_actions(
+    env_id: str = typer.Option("browsergym/miniwob.click-menu", "--env"),
+    debug: bool = typer.Option(False, "--debug/--no-debug"),
 ):
-    """Reset an env and write obs['dom_object'] to dom_dumps/<env>.txt."""
-    import json
+    """
+    Probe which string-action verbs are accepted by the env parser.
+
+    Robust signals:
+      - If env.step(action) does NOT raise -> verb is recognized (even if args invalid)
+      - If it raises, check exception text for parse/unknown
+      - Also check obs['last_action'] / obs['last_action_error'] after the call
+    """
+    import re
     import gymnasium as gym
     import browsergym.miniwob  # registers envs
-    import re
 
-    def safe_name(s: str) -> str:
-        return re.sub(r"[^A-Za-z0-9._-]+", "_", s).strip("_")
-
-    # Friendly: drop -v0 if user passes it
     if env_id.endswith("-v0"):
         env_id = env_id[:-3]
+
+    CANDIDATES = {
+        "CLICK": ["CLICK(0)", "CLICK(1)", "CLICK(10,10)"],
+        "TYPE": ['TYPE(0,"x")', 'TYPE(1,"x")'],
+        "SCROLL": ["SCROLL(down,100)", "SCROLL(up,100)"],
+        "WAIT": ["WAIT(10)", "WAIT(100)"],
+        "HOVER": ["HOVER(0)", "HOVER(1)", "HOVER(10,10)"],
+        "PRESS": ['PRESS("Enter")', 'PRESS("Tab")'],
+        "KEYPRESS": ['KEYPRESS("Enter")', 'KEYPRESS("Tab")'],
+    }
+
+    UNKNOWN_PAT = re.compile(
+        r"(unknown action|unrecognized|invalid action|cannot parse|parse error|unsupported)",
+        re.IGNORECASE,
+    )
+
+    def looks_unknown(msg: str) -> bool:
+        return bool(UNKNOWN_PAT.search((msg or "").strip()))
 
     env = gym.make(env_id)
     try:
         obs, info = env.reset()
-
         if not isinstance(obs, dict):
             raise typer.BadParameter(f"Unexpected obs type: {type(obs)}")
 
-        dom = (
-            obs.get("dom_object")
-            or obs.get("dom")
-            or obs.get("dom_tree")
-            or obs.get("dom_snapshot")
+        recognized, rejected = [], []
+
+        for verb, examples in CANDIDATES.items():
+            ok = False
+
+            for a in examples:
+                before_last_action = obs.get("last_action") if isinstance(obs, dict) else None
+
+                threw = False
+                exc_msg = ""
+                try:
+                    obs2, reward, term, trunc, info2 = env.step(a)
+                except Exception as e:
+                    threw = True
+                    exc_msg = str(e)
+                    obs2 = obs  # keep previous
+
+                last_action = obs2.get("last_action") if isinstance(obs2, dict) else None
+                last_err = obs2.get("last_action_error") if isinstance(obs2, dict) else None
+
+                # Determine recognition:
+                # - If step didn't throw: recognized.
+                # - If it threw but NOT with "unknown/parse": still likely recognized (bad args downstream).
+                # - If obs.last_action updated to our string: recognized.
+                if (not threw) or (threw and not looks_unknown(exc_msg)) or (last_action == a):
+                    ok = True
+
+                if debug:
+                    print(
+                        f"[{verb}] try={a!r} threw={threw} exc={exc_msg[:120]!r} "
+                        f"last_action={last_action!r} last_err={last_err!r}"
+                    )
+
+                if ok:
+                    break
+
+            (recognized if ok else rejected).append(verb)
+
+        print(f"Env: {env_id}\n")
+        print("Recognized verbs (probe):")
+        for v in recognized:
+            print(" -", v)
+
+        print("\nRejected / likely unsupported:")
+        for v in rejected:
+            print(" -", v)
+
+        print(
+            "\nTip: For MiniWoB you should see at least CLICK / TYPE / SCROLL / WAIT "
+            "(even if particular signatures differ). Run with --debug to see why a verb was rejected."
         )
-        if dom is None:
-            raise typer.BadParameter(
-                f"No dom_object found in obs. keys={list(obs.keys())}"
-            )
 
-        # Convert to text
-        if isinstance(dom, str):
-            text = dom
-        else:
-            # pretty JSON for dict/list/other
-            text = json.dumps(dom, indent=2, ensure_ascii=False)
-
-        out_dir.mkdir(parents=True, exist_ok=True)
-        fname = f"{safe_name(env_id)}.txt"
-        out_path = out_dir / fname
-        out_path.write_text(text, encoding="utf-8")
-
-        typer.echo(f"✅ Wrote DOM to {out_path.resolve()}")
     finally:
         env.close()
+
+@app.command("find-action-parser")
+def find_action_parser(
+    needle: str = typer.Option("parse", "--needle", help="Search needle (e.g. parse, action, grammar)"),
+    max_hits: int = typer.Option(40, "--max-hits", help="Max hits to print"),
+):
+    """Search installed browsergym sources for likely action parsing code."""
+    import re
+    from pathlib import Path
+    import browsergym
+    import typer
+
+    roots = list(getattr(browsergym, "__path__", []) or [])
+    if not roots:
+        raise typer.BadParameter("browsergym.__path__ is empty")
+    root = Path(roots[0]).resolve()
+    typer.echo(f"browsergym root: {root}")
+
+    # patterns that tend to show up in action parsing / action space
+    pats = [
+        re.compile(r"\baction_space\b"),
+        re.compile(r"\bparse\b", re.IGNORECASE),
+        re.compile(r"\bCLICK\b|\bTYPE\b|\bSCROLL\b|\bWAIT\b"),
+        re.compile(r"Unicode\(", re.IGNORECASE),
+        re.compile(r"gym\.spaces\.(Text|Sequence|Box|Discrete)"),
+        re.compile(r"re\.compile\("),
+    ]
+    needle_re = re.compile(re.escape(needle), re.IGNORECASE) if needle else None
+
+    hits = []
+    for p in root.rglob("*.py"):
+        txt = p.read_text(encoding="utf-8", errors="ignore")
+        score = sum(1 for pat in pats if pat.search(txt))
+        if needle_re and not needle_re.search(txt):
+            continue
+        if score > 0:
+            hits.append((score, p))
+
+    hits.sort(reverse=True, key=lambda x: x[0])
+    if not hits:
+        typer.echo("No candidate files found.")
+        return
+
+    typer.echo("\nTop candidates:")
+    for score, p in hits[:max_hits]:
+        typer.echo(f"  score={score:>2}  {p}")
+
+    # show a small snippet from the best file(s)
+    best = hits[:3]
+    for score, p in best:
+        typer.echo(f"\n--- snippet: {p} ---")
+        txt = p.read_text(encoding="utf-8", errors="ignore")
+        # show lines near "action_space" or "parse"
+        for key in ["action_space", "parse", "CLICK", "TYPE", "SCROLL", "WAIT"]:
+            i = txt.find(key)
+            if i != -1:
+                start = max(0, i - 400)
+                end = min(len(txt), i + 400)
+                typer.echo(txt[start:end])
+                break
+
+
 
 if __name__ == "__main__":
     app()

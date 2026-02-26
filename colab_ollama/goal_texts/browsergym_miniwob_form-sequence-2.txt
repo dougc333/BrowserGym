@@ -1,0 +1,1 @@
+Check the 1st radio button and enter the number "13" into the 1st textbox.

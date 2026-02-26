@@ -1,0 +1,1 @@
+Scroll the textarea to the bottom of the text hit submit.

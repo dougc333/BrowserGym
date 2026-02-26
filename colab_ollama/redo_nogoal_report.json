@@ -1,0 +1,1714 @@
+{
+  "failed_in": 112,
+  "newly_solved": 2,
+  "still_failed": 110,
+  "results": [
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Click on the numbers in ascending order.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.ascending-numbers",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_ascending-numbers__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('14')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Create a line that bisects the angle evenly in two, then press submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.bisect-angle",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_bisect-angle__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Book the cheapest one-way flight from: Savannah, GA to: DTW on 11/14/2016.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.book-flight",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_book-flight__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Book the shortest one-way flight from: MOU to: CMI on 12/22/2016.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.book-flight-nodelay",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_book-flight-nodelay__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Buy the ticket with the cheapest cost.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.buy-ticket",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_buy-ticket__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('19')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Select 03/17/2016 as the date and hit submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.choose-date",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_choose-date__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('19')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Select 12/18/2016 as the date and hit submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.choose-date-easy",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_choose-date-easy__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('19')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Select 12/06/2016 as the date and hit submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.choose-date-medium",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_choose-date-medium__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('19')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Select 01/22/2016 as the date and hit submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.choose-date-nodelay",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_choose-date-nodelay__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('19')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": "TimeoutError: Locator.click: Timeout 500ms exceeded.\nCall log:\nwaiting for get_by_test_id(\"19\")\n  -   locator resolved to <option bid=\"19\" value=\"Ruby\" browsergym_set_of_marks=\"0\u2026>Ruby</option>\n  - attempting click action\n  -   waiting for element to be visible, enabled and stable\n  -   element is not visible\n  - retrying click action, attempt #1\n  -   waiting for element to be visible, enabled and stable\n  -   element is not visible\n  - retrying click action, attempt #2\n  -   waiting 20ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is not visible\n  - retrying click action, attempt #3\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is not visible\n  - retrying click action, attempt #4\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is not visible\n  - retrying click action, attempt #5\n  -   waiting 500ms\n",
+      "goal": "Select Greenland from the list and click Submit.",
+      "plans_tried": 2,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.choose-list",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_choose-list__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('14')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Find and click on the center of the circle, then press submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.circle-center",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_circle-center__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('12')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": "TimeoutError: Locator.click: Timeout 500ms exceeded.\nCall log:\nwaiting for get_by_test_id(\"12\")\n  -   locator resolved to <button value=\"\" bid=\"12\" id=\"subbtn\" browsergym_set_of_\u2026>ONE</button>\n  - attempting click action\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <button value=\"\" bid=\"13\" id=\"subbtn2\" browsergym_set_of\u2026>TWO</button> intercepts pointer events\n  - retrying click action, attempt #1\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <button value=\"\" bid=\"13\" id=\"subbtn2\" browsergym_set_of\u2026>TWO</button> intercepts pointer events\n  - retrying click action, attempt #2\n  -   waiting 20ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <button value=\"\" bid=\"13\" id=\"subbtn2\" browsergym_set_of\u2026>TWO</button> intercepts pointer events\n  - retrying click action, attempt #3\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <button value=\"\" bid=\"13\" id=\"subbtn2\" browsergym_set_of\u2026>TWO</button> intercepts pointer events\n  - retrying click action, attempt #4\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <button value=\"\" bid=\"13\" id=\"subbtn2\" browsergym_set_of\u2026>TWO</button> intercepts pointer events\n  - retrying click action, attempt #5\n  -   waiting 500ms\n",
+      "goal": "Click button ONE, then click button TWO.",
+      "plans_tried": 2,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.click-button-sequence",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-button-sequence__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('33')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": "ValueError: Could not find element with bid \"33\"",
+      "goal": "Select cJUj, fGWU5A5, Z45A8v, RqM4hC and click Submit.",
+      "plans_tried": 5,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.click-checkboxes",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-checkboxes__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('43')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": "TimeoutError: Locator.click: Timeout 500ms exceeded.\nCall log:\nwaiting for get_by_test_id(\"31\")\n  -   locator resolved to <br bid=\"31\" browsergym_set_of_marks=\"0\" browsergym_\u2026/>\n  - attempting click action\n  -   waiting for element to be visible, enabled and stable\n  -   element is not visible\n  - retrying click action, attempt #1\n  -   waiting for element to be visible, enabled and stable\n  -   element is not visible\n  - retrying click action, attempt #2\n  -   waiting 20ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is not visible\n  - retrying click action, attempt #3\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is not visible\n  - retrying click action, attempt #4\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is not visible\n  - retrying click action, attempt #5\n  -   waiting 500ms\n",
+      "goal": "Select Qr, YkuqP, kxkt, hBku7S, p3Ytf5, Ct, 7PX, xajNhQ3 and click Submit.",
+      "plans_tried": 9,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.click-checkboxes-large",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-checkboxes-large__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('27')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Select wHO0, jNPRy9i, 1f and click Submit.",
+      "plans_tried": 4,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.click-checkboxes-transfer",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-checkboxes-transfer__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('22')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Expand the section below and click submit.",
+      "plans_tried": 2,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.click-collapsible",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-collapsible__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Expand the sections below, to find and click on the link \"Adipiscing\".",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.click-collapsible-2",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-collapsible-2__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Expand the sections below, to find and click on the link \"Facilisis.\".",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.click-collapsible-2-nodelay",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-collapsible-2-nodelay__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('22')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Expand the section below and click submit.",
+      "plans_tried": 2,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.click-collapsible-nodelay",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-collapsible-nodelay__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Click on the grey colored box.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.click-color",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-color__solver.py"
+    },
+    {
+      "solved": true,
+      "reward": 1.0,
+      "actions": [
+        "click('27')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Click the button in the dialog box labeled \"Cancel\".",
+      "plans_tried": 1,
+      "env_id": "browsergym/miniwob.click-dialog-2",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/goal/browsergym_miniwob_click-dialog-2__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Click on the link \"commodo\".",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.click-link",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-link__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('25')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": "TimeoutError: Locator.click: Timeout 500ms exceeded.\nCall log:\nwaiting for get_by_test_id(\"25\")\n  -   locator resolved to <ul bid=\"25\" role=\"menu\" aria-hidden=\"true\" aria-exp\u2026>\u2026</ul>\n  - attempting click action\n  -   waiting for element to be visible, enabled and stable\n  -   element is not visible\n  - retrying click action, attempt #1\n  -   waiting for element to be visible, enabled and stable\n  -   element is not visible\n  - retrying click action, attempt #2\n  -   waiting 20ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is not visible\n  - retrying click action, attempt #3\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is not visible\n  - retrying click action, attempt #4\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is not visible\n  - retrying click action, attempt #5\n  -   waiting 500ms\n",
+      "goal": "Select Gussy",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.click-menu",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-menu__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('16')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Click the \"Menu\" button, and then find and click on the item with the \"ui-icon-zoomout\" icon.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.click-menu-2",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-menu-2__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('33')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Select 3YAsl and click Submit.",
+      "plans_tried": 2,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.click-option",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-option__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Expand the pie menu below and click on the item labeled \"9\".",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.click-pie",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-pie__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Expand the pie menu below and click on the item labeled \"o\".",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.click-pie-nodelay",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-pie-nodelay__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('22')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Select Bahrain from the scroll list and click Submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.click-scroll-list",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-scroll-list__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('25')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Select all the shades of blue and press Submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.click-shades",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-shades__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Click on a small shape",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.click-shape",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-shape__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Switch between the tabs to find and click on the link \"semper\".",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.click-tab-2",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-tab-2__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Switch between the tabs to find and click on the link \"nunc\".",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.click-tab-2-easy",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-tab-2-easy__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Switch between the tabs to find and click on the link \"viverra\".",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.click-tab-2-hard",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-tab-2-hard__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Switch between the tabs to find and click on the link \"Blandit.\".",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.click-tab-2-medium",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-tab-2-medium__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "focus('14')",
+        "clear('14')",
+        "fill('14', 'checkbox')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": "Error: Locator.fill: Error: Input of type \"radio\" cannot be filled\nCall log:\nwaiting for get_by_test_id(\"14\")\n  -   locator resolved to <label bid=\"14\" browsergym_set_of_marks=\"0\" browsergym_\u2026>\u2026</label>\n  -   fill(\"checkbox\")\n  - attempting fill action\n  -   waiting for element to be visible, enabled and editable\n",
+      "goal": "Click on a \"checkbox\" widget.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.click-widget",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_click-widget__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('16')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Copy the text in the textarea below, paste it into the textbox and press Submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.copy-paste",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_copy-paste__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('19')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Copy the text from the 3rd text area below and paste it into the text input, then press Submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.copy-paste-2",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_copy-paste-2__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "How many large blue items are there?",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.count-shape",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_count-shape__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Press the button that correctly denotes how many sides the shape has.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.count-sides",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_count-sides__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Create a 30 mins event named \"Food\", between 12PM and 4PM.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.daily-calendar",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_daily-calendar__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Drag the smaller box so that it is completely inside the larger box.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.drag-box",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_drag-box__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('14')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Drag the circle left then press Submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.drag-circle",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_drag-circle__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Move the cube around so that \"5\" is the active side facing the user.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.drag-cube",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_drag-cube__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Drag Emilee to the bottom.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.drag-items",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_drag-items__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Drag Corene to the bottom left.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.drag-items-grid",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_drag-items-grid__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Drag all triangles into the black box.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.drag-shapes",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_drag-shapes__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Drag all rectangles into the left box, and everything else into the right box.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.drag-shapes-2",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_drag-shapes-2__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('14')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Drag the item down then press Submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.drag-single-shape",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_drag-single-shape__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Sort the numbers in increasing order, starting with the lowest number at the top of the list.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.drag-sort-numbers",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_drag-sort-numbers__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('14')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Draw a circle centered around the marked point by dragging the mouse. Press submit when done.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.draw-circle",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_draw-circle__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('14')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Draw a horizontal line that runs through the dot, then press submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.draw-line",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_draw-line__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Find the email by Isabelle and reply to them with the text \"Tempor.\".",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.email-inbox",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_email-inbox__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Find the email by Lonee and click the trash icon to delete it.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.email-inbox-delete",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_email-inbox-delete__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Find the email by Fay and forward that email to Adena.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.email-inbox-forward",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_email-inbox-forward__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Search for the mail Catharina sent you and send it to Lizbeth.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.email-inbox-forward-nl",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_email-inbox-forward-nl__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Send Neysa's email to Eachelle.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.email-inbox-forward-nl-turk",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_email-inbox-forward-nl-turk__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Find the email by Berta and click the star icon to mark it as important.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.email-inbox-important",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_email-inbox-important__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Please forward the email Jania sent today to Eda",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.email-inbox-nl-turk",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_email-inbox-nl-turk__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Find the email by Robbie and reply to them with the text \"At id.\".",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.email-inbox-noscroll",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_email-inbox-noscroll__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Find the email by Gabbie and reply to them with the text \"Condimentum ipsum.\".",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.email-inbox-reply",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_email-inbox-reply__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Find the email by Anthe and reply to them with the text \"Netus id. Elit amet.\".",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.email-inbox-star-reply",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_email-inbox-star-reply__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('15')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Enter 03/06/2018 as the date and hit submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.enter-date",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_enter-date__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('20')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Enter the password \"2MfFq\" into both text fields and press submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.enter-password",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_enter-password__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "focus('14')",
+        "clear('14')",
+        "fill('14', 'keli')",
+        "click('15')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Type \"keli\" in all upper case letters in the text input and press Submit.",
+      "plans_tried": 2,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.enter-text-2",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_enter-text-2__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('15')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Enter 12:24 PM as the time and press submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.enter-time",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_enter-time__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('20')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Find and pick the card with the greatest number, then press submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.find-greatest",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_find-greatest__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('14')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Find and click on the shortest mid-point between the two points, then press submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.find-midpoint",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_find-midpoint__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "focus('14')",
+        "clear('14')",
+        "fill('14', 'Submit')",
+        "click('15')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Find the 6th word in the paragraph, type that into the textbox and press \"Submit\".",
+      "plans_tried": 2,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.find-word",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_find-word__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Focus into the textbox.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.focus-text",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_focus-text__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Focus into the 1st input textbox.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.focus-text-2",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_focus-text-2__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('24')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Select -3 with the slider, click the 3rd checkbox, then hit Submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.form-sequence",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_form-sequence__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Check the 1st radio button and enter the number \"3\" into the 2nd textbox.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.form-sequence-2",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_form-sequence-2__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "focus('40')",
+        "clear('40')",
+        "fill('40', 'No')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Choose 5ft 10in from the dropdown, then click the button labeled \"No\".",
+      "plans_tried": 2,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.form-sequence-3",
+      "previous_failure_reason": "last_action_error: TimeoutError: Locator.click: Timeout 500ms exceeded.\nCall log:\nwaiting for get_by_test_id(\"44\")\n  -   locator resolved to <button value=\"\" bid=\"44\" id=\"maybe\" class=\"secondary-ac\u2026>Maybe</button>\n  - attempting click action\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <li class=\"\" bid=\"35\" value=\"0\" data-index=\"2\" brows\u2026>5ft 10in</li> from <div bid=\"16\" id=\"dropdown-container\" browsergym_set_\u2026>\u2026</div> subtree intercepts pointer events\n  - retrying click action, attempt #1\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <li class=\"\" bid=\"35\" value=\"0\" data-index=\"2\" brows\u2026>5ft 10in</li> from <div bid=\"16\" id=\"dropdown-container\" browsergym_set_\u2026>\u2026</div> subtree intercepts pointer events\n  - retrying click action, attempt #2\n  -   waiting 20ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <li class=\"\" bid=\"35\" value=\"0\" data-index=\"2\" brows\u2026>5ft 10in</li> from <div bid=\"16\" id=\"dropdown-container\" browsergym_set_\u2026>\u2026</div> subtree intercepts pointer events\n  - retrying click action, attempt #3\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <li class=\"\" bid=\"35\" value=\"0\" data-index=\"2\" brows\u2026>5ft 10in</li> from <div bid=\"16\" id=\"dropdown-container\" browsergym_set_\u2026>\u2026</div> subtree intercepts pointer events\n  - retrying click action, attempt #4\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <li class=\"\" bid=\"35\" value=\"0\" data-index=\"2\" brows\u2026>5ft 10in</li> from <div bid=\"16\" id=\"dropdown-container\" browsergym_set_\u2026>\u2026</div> subtree intercepts pointer events\n  - retrying click action, attempt #5\n  -   waiting 500ms\n",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_form-sequence-3__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('15')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Generate an odd number, then press submit.",
+      "plans_tried": 2,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.generate-number",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_generate-number__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Click on the grid coordinate (0,2).",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.grid-coordinate",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_grid-coordinate__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('22')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Guess the number between 0-9 and press Submit. Use the feedback below to find the right number.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.guess-number",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_guess-number__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('13')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Highlight the text in the paragraph below and click submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.highlight-text",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_highlight-text__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('17')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Highlight the text in the 3rd paragraph and click submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.highlight-text-2",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_highlight-text-2__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Find and click on the HOT area.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.hot-cold",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_hot-cold__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Click the button that best describes the figure below.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.identify-shape",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_identify-shape__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Enter the username \"thaddeus\" and the password \"vd8\" into the text fields and press login.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.login-user",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_login-user__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Enter the username \"riley\" and the password \"tT\" into the text fields and press login.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.login-user-popup",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_login-user-popup__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Search for romance movies directed by Mcintosh from year 1999.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.multi-layouts",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_multi-layouts__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Search for surreal movies directed by Briggs from year 1983.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.multi-orderings",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_multi-orderings__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Navigate through the file tree. Find and click on the folder or file named \"Myron\".",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.navigate-tree",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_navigate-tree__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('77')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Draw the number \"6\" in the checkboxes using the example on the right and press Submit when finished.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.number-checkboxes",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_number-checkboxes__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('37')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Mark the numbers below as odd or even and press submit when done.",
+      "plans_tried": 7,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.odd-or-even",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_odd-or-even__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Order 4 items that are meat",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.order-food",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_order-food__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Find Amalita in the contact book and click on their address.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.phone-book",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_phone-book__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('32')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Enter the value of First name into the text field and press Submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.read-table",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_read-table__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('37')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Enter the value that corresponds with each label into the form and submit when done.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.read-table-2",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_read-table-2__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('19')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Resize the textarea so that the width is smaller than its initial size then press Submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.resize-textarea",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_resize-textarea__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('14')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Add a third point to create a right angle, then press submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.right-angle",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_right-angle__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('15')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Find the last word in the text area, enter it into the text field and hit Submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.scroll-text",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_scroll-text__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('14')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Scroll the textarea to the top of the text hit submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.scroll-text-2",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_scroll-text-2__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "focus('15')",
+        "clear('15')",
+        "fill('15', 'Vanda')",
+        "click('16')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Use the textbox to enter \"Vanda\" and press \"Search\", then find and click the 9th search result.",
+      "plans_tried": 2,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.search-engine",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_search-engine__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('17')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Solve for x and type your answer into the textbox. Press Submit when done.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.simple-algebra",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_simple-algebra__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('16')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Solve the math problem and type your answer into the textbox. Press submit when done.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.simple-arithmetic",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_simple-arithmetic__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "For the user @diam, click on the \"Like\" button.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.social-media",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_social-media__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('104')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Click the \"Retweet\" button on all posts by @duis and then click Submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.social-media-all",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_social-media-all__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('104')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Click the \"Reply\" button on 5 posts by @cristin and then click Submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.social-media-some",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_social-media-some__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('22')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Buy KUQ stock when the price is less than $74.10.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.stock-market",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_stock-market__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Use the terminal below to delete a file ending with the extension .png",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.terminal",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_terminal__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('108')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Using the text editor, give the text in the style bold and press Submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.text-editor",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_text-editor__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('19')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Type the text below into the text field and press Submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.text-transform",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_text-transform__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": null,
+      "actions": [],
+      "terminated": null,
+      "truncated": null,
+      "last_action_error": null,
+      "goal": "Playing as 'X', win a game of tic-tac-toe.",
+      "plans_tried": 0,
+      "failure_reason": "No heuristic plan with new grammar",
+      "env_id": "browsergym/miniwob.tic-tac-toe",
+      "previous_failure_reason": "No heuristic action proposal",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_tic-tac-toe__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "focus('17')",
+        "clear('17')",
+        "fill('17', 'Togo')",
+        "click('18')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": "TimeoutError: Locator.click: Timeout 500ms exceeded.\nCall log:\nwaiting for get_by_test_id(\"18\")\n  -   locator resolved to <button value=\"\" bid=\"18\" id=\"subbtn\" class=\"secondary-a\u2026>Submit</button>\n  - attempting click action\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Togo</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #1\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Togo</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #2\n  -   waiting 20ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Togo</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #3\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Togo</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #4\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Togo</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #5\n  -   waiting 500ms\n",
+      "goal": "Enter an item that starts with \"Togo\" and ends with \"ogo\".",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.use-autocomplete",
+      "previous_failure_reason": "last_action_error: TimeoutError: Locator.click: Timeout 500ms exceeded.\nCall log:\nwaiting for get_by_test_id(\"18\")\n  -   locator resolved to <button value=\"\" bid=\"18\" id=\"subbtn\" class=\"secondary-a\u2026>Submit</button>\n  - attempting click action\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Saudi Arabia</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #1\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Saudi Arabia</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #2\n  -   waiting 20ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Saudi Arabia</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #3\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Saudi Arabia</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #4\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Saudi Arabia</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #5\n  -   waiting 500ms\n",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_use-autocomplete__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "focus('17')",
+        "clear('17')",
+        "fill('17', 'Ro')",
+        "click('18')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": "TimeoutError: Locator.click: Timeout 500ms exceeded.\nCall log:\nwaiting for get_by_test_id(\"18\")\n  -   locator resolved to <button value=\"\" bid=\"18\" id=\"subbtn\" class=\"secondary-a\u2026>Submit</button>\n  - attempting click action\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Romania</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #1\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Romania</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #2\n  -   waiting 20ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Romania</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #3\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Romania</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #4\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Romania</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #5\n  -   waiting 500ms\n",
+      "goal": "Enter an item that starts with \"Ro\".",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.use-autocomplete-nodelay",
+      "previous_failure_reason": "last_action_error: TimeoutError: Locator.click: Timeout 500ms exceeded.\nCall log:\nwaiting for get_by_test_id(\"18\")\n  -   locator resolved to <button value=\"\" bid=\"18\" id=\"subbtn\" class=\"secondary-a\u2026>Submit</button>\n  - attempting click action\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Nepal</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #1\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Nepal</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #2\n  -   waiting 20ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Nepal</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #3\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Nepal</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #4\n  -   waiting 100ms\n  -   waiting for element to be visible, enabled and stable\n  -   element is visible, enabled and stable\n  -   scrolling into view if needed\n  -   done scrolling\n  -   <div bid=\"22\" id=\"ui-id-2\" tabindex=\"-1\" browsergym_s\u2026>Nepal</div> from <ul bid=\"19\" id=\"ui-id-1\" tabindex=\"0\" browsergym_se\u2026>\u2026</ul> subtree intercepts pointer events\n  - retrying click action, attempt #5\n  -   waiting 500ms\n",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_use-autocomplete-nodelay__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('19')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Select 14 with the slider and hit Submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.use-slider",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_use-slider__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('25')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Set the sliders to the combination [14,11,6] and submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.use-slider-2",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_use-slider-2__solver.py"
+    },
+    {
+      "solved": true,
+      "reward": 1.0,
+      "actions": [
+        "click('25')"
+      ],
+      "terminated": true,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Select -2 with the spinner and hit Submit.",
+      "plans_tried": 1,
+      "env_id": "browsergym/miniwob.use-spinner",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/goal/browsergym_miniwob_use-spinner__solver.py"
+    },
+    {
+      "solved": false,
+      "reward": 0.0,
+      "actions": [
+        "click('27')"
+      ],
+      "terminated": false,
+      "truncated": false,
+      "last_action_error": null,
+      "goal": "Type the total number of blocks into the textbox and press Submit.",
+      "plans_tried": 1,
+      "failure_reason": "reward=0.0",
+      "env_id": "browsergym/miniwob.visual-addition",
+      "previous_failure_reason": "reward=0.0",
+      "solver_path": "/Users/dc/BrowserGym/colab_ollama/nogoal/browsergym_miniwob_visual-addition__solver.py"
+    }
+  ]
+}

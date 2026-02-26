@@ -1,0 +1,1 @@
+Click on the grid coordinate (-1,-1).

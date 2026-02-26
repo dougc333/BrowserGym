@@ -1,0 +1,1 @@
+Sort the numbers in increasing order, starting with the lowest number at the top of the list.

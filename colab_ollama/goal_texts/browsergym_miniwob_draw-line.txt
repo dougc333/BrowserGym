@@ -1,0 +1,1 @@
+Draw a horizontal line that runs through the dot, then press submit.

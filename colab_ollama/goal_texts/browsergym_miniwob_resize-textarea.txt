@@ -1,0 +1,1 @@
+Resize the textarea so that the height is smaller than its initial size then press Submit.

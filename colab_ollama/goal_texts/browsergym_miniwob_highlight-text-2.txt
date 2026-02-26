@@ -1,0 +1,1 @@
+Highlight the text in the 1st paragraph and click submit.

@@ -1,0 +1,153 @@
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /Users/dc/BrowserGym/colab_ollama/src/obg/cli.py:78 in print_goal            │
+│                                                                              │
+│     75 │                                                                     │
+│     76 │   env = gym.make(env_id)                                            │
+│     77 │   try:                                                              │
+│ ❱   78 │   │   obs, info = env.reset()                                       │
+│     79 │   │   if not isinstance(obs, dict):                                 │
+│     80 │   │   │   raise typer.BadParameter(f"Unexpected obs type: {type(obs │
+│     81                                                                       │
+│                                                                              │
+│ /Users/dc/BrowserGym/browsergym-env/lib/python3.11/site-packages/gymnasium/w │
+│ rappers/common.py:400 in reset                                               │
+│                                                                              │
+│   397 │   ) -> tuple[ObsType, dict[str, Any]]:                               │
+│   398 │   │   """Resets the environment with `kwargs`."""                    │
+│   399 │   │   self._has_reset = True                                         │
+│ ❱ 400 │   │   return super().reset(seed=seed, options=options)               │
+│   401 │                                                                      │
+│   402 │   def render(self) -> RenderFrame | list[RenderFrame] | None:        │
+│   403 │   │   """Renders the environment with `kwargs`."""                   │
+│                                                                              │
+│ /Users/dc/BrowserGym/browsergym-env/lib/python3.11/site-packages/gymnasium/c │
+│ ore.py:333 in reset                                                          │
+│                                                                              │
+│   330 │   │   self, *, seed: int | None = None, options: dict[str, Any] | No │
+│   331 │   ) -> tuple[WrapperObsType, dict[str, Any]]:                        │
+│   332 │   │   """Uses the :meth:`reset` of the :attr:`env` that can be overw │
+│ ❱ 333 │   │   return self.env.reset(seed=seed, options=options)              │
+│   334 │                                                                      │
+│   335 │   def render(self) -> RenderFrame | list[RenderFrame] | None:        │
+│   336 │   │   """Uses the :meth:`render` of the :attr:`env` that can be over │
+│                                                                              │
+│ /Users/dc/BrowserGym/browsergym-env/lib/python3.11/site-packages/gymnasium/w │
+│ rappers/common.py:293 in reset                                               │
+│                                                                              │
+│   290 │   │   """Resets the environment that on the first call will run the  │
+│   291 │   │   if self.checked_reset is False:                                │
+│   292 │   │   │   self.checked_reset = True                                  │
+│ ❱ 293 │   │   │   return env_reset_passive_checker(self.env, seed=seed, opti │
+│   294 │   │   else:                                                          │
+│   295 │   │   │   return self.env.reset(seed=seed, options=options)          │
+│   296                                                                        │
+│                                                                              │
+│ /Users/dc/BrowserGym/browsergym-env/lib/python3.11/site-packages/gymnasium/u │
+│ tils/passive_env_checker.py:185 in env_reset_passive_checker                 │
+│                                                                              │
+│   182 │   │   )                                                              │
+│   183 │                                                                      │
+│   184 │   # Checks the result of env.reset with kwargs                       │
+│ ❱ 185 │   result = env.reset(**kwargs)                                       │
+│   186 │                                                                      │
+│   187 │   if not isinstance(result, tuple):                                  │
+│   188 │   │   logger.warn(                                                   │
+│                                                                              │
+│ /Users/dc/BrowserGym/browsergym-env/lib/python3.11/site-packages/browsergym/ │
+│ core/env.py:341 in reset                                                     │
+│                                                                              │
+│   338 │   │   recording_start_time = time.time()                             │
+│   339 │   │                                                                  │
+│   340 │   │   # setup the task                                               │
+│ ❱ 341 │   │   task_goal, task_info = self.task.setup(page=self.page)         │
+│   342 │   │                                                                  │
+│   343 │   │   # process the task goal                                        │
+│   344                                                                        │
+│                                                                              │
+│ /Users/dc/BrowserGym/browsergym-env/lib/python3.11/site-packages/browsergym/ │
+│ miniwob/base.py:127 in setup                                                 │
+│                                                                              │
+│   124 │   │   │   )                                                          │
+│   125 │   │                                                                  │
+│   126 │   │   # start the task                                               │
+│ ❱ 127 │   │   self.page.evaluate(                                            │
+│   128 │   │   │   r"""                                                       │
+│   129 Math.seedrandom({seed});                                               │
+│   130 core.EPISODE_MAX_TIME = {episode_max_time};                            │
+│                                                                              │
+│ /Users/dc/BrowserGym/browsergym-env/lib/python3.11/site-packages/playwright/ │
+│ sync_api/_generated.py:8183 in evaluate                                      │
+│                                                                              │
+│    8180 │   │   """                                                          │
+│    8181 │   │                                                                │
+│    8182 │   │   return mapping.from_maybe_impl(                              │
+│ ❱  8183 │   │   │   self._sync(                                              │
+│    8184 │   │   │   │   self._impl_obj.evaluate(expression=expression, arg=m │
+│    8185 │   │   │   )                                                        │
+│    8186 │   │   )                                                            │
+│                                                                              │
+│ /Users/dc/BrowserGym/browsergym-env/lib/python3.11/site-packages/playwright/ │
+│ _impl/_sync_base.py:115 in _sync                                             │
+│                                                                              │
+│   112 │   │   while not task.done():                                         │
+│   113 │   │   │   self._dispatcher_fiber.switch()                            │
+│   114 │   │   asyncio._set_running_loop(self._loop)                          │
+│ ❱ 115 │   │   return task.result()                                           │
+│   116 │                                                                      │
+│   117 │   def _wrap_handler(self, handler: Any) -> Callable[..., None]:      │
+│   118 │   │   if callable(handler):                                          │
+│                                                                              │
+│ /Users/dc/BrowserGym/browsergym-env/lib/python3.11/site-packages/playwright/ │
+│ _impl/_page.py:435 in evaluate                                               │
+│                                                                              │
+│    432 │   │   return await self._main_frame.dispatch_event(**locals_to_para │
+│    433 │                                                                     │
+│    434 │   async def evaluate(self, expression: str, arg: Serializable = Non │
+│ ❱  435 │   │   return await self._main_frame.evaluate(expression, arg)       │
+│    436 │                                                                     │
+│    437 │   async def evaluate_handle(                                        │
+│    438 │   │   self, expression: str, arg: Serializable = None               │
+│                                                                              │
+│ /Users/dc/BrowserGym/browsergym-env/lib/python3.11/site-packages/playwright/ │
+│ _impl/_frame.py:278 in evaluate                                              │
+│                                                                              │
+│   275 │                                                                      │
+│   276 │   async def evaluate(self, expression: str, arg: Serializable = None │
+│   277 │   │   return parse_result(                                           │
+│ ❱ 278 │   │   │   await self._channel.send(                                  │
+│   279 │   │   │   │   "evaluateExpression",                                  │
+│   280 │   │   │   │   dict(                                                  │
+│   281 │   │   │   │   │   expression=expression,                             │
+│                                                                              │
+│ /Users/dc/BrowserGym/browsergym-env/lib/python3.11/site-packages/playwright/ │
+│ _impl/_connection.py:59 in send                                              │
+│                                                                              │
+│    56 │   │   self.on("error", lambda exc: self._connection._on_event_listen │
+│    57 │                                                                      │
+│    58 │   async def send(self, method: str, params: Dict = None) -> Any:     │
+│ ❱  59 │   │   return await self._connection.wrap_api_call(                   │
+│    60 │   │   │   lambda: self.inner_send(method, params, False)             │
+│    61 │   │   )                                                              │
+│    62                                                                        │
+│                                                                              │
+│ /Users/dc/BrowserGym/browsergym-env/lib/python3.11/site-packages/playwright/ │
+│ _impl/_connection.py:514 in wrap_api_call                                    │
+│                                                                              │
+│   511 │   │   try:                                                           │
+│   512 │   │   │   return await cb()                                          │
+│   513 │   │   except Exception as error:                                     │
+│ ❱ 514 │   │   │   raise rewrite_error(error, f"{parsed_st['apiName']}: {erro │
+│   515 │   │   finally:                                                       │
+│   516 │   │   │   self._api_zone.set(None)                                   │
+│   517                                                                        │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Error: Page.evaluate: ReferenceError: $ is not defined
+    at genProblem 
+(http://127.0.0.1:8000/miniwob/use-autocomplete-nodelay.html:30:3)
+    at core.startEpisodeReal [as startEpisodeReal_legacy] 
+(http://127.0.0.1:8000/core/core.js:88:3)
+    at core.startEpisodeReal (eval at evaluate (:226:30), <anonymous>:49:8)
+    at eval (eval at evaluate (:226:30), <anonymous>:3:6)
+    at eval (<anonymous>)
+    at UtilityScript.evaluate (<anonymous>:226:30)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)

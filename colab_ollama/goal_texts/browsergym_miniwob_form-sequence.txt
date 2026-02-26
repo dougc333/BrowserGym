@@ -1,0 +1,1 @@
+Select 5 with the slider, click the 2nd checkbox, then hit Submit.

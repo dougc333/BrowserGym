@@ -1,0 +1,1 @@
+Drag all circles into the left box, and everything else into the right box.

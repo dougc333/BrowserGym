@@ -1,0 +1,1 @@
+Draw a circle centered around the marked point by dragging the mouse. Press submit when done.

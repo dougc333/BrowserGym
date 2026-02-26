@@ -1,0 +1,1 @@
+Find and click on the shortest mid-point between the two points, then press submit.

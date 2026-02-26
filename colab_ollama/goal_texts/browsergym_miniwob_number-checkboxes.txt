@@ -1,0 +1,1 @@
+Draw the number "9" in the checkboxes using the example on the right and press Submit when finished.

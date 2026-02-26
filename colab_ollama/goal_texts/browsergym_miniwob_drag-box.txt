@@ -1,0 +1,1 @@
+Drag the smaller box so that it is completely inside the larger box.

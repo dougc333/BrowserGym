@@ -1,0 +1,1 @@
+Find the 4th word in the paragraph, type that into the textbox and press "Submit".

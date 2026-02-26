@@ -1,0 +1,1 @@
+Create a 1 hour event named "Party", between 4PM and 8PM.
