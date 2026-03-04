@@ -1,0 +1,194 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import os
+import re
+import math
+import time
+import numpy as np
+import gymnasium as gym
+import browsergym.miniwob  # registers envs
+
+# ---------- Config ----------
+ENV_ID = "browsergym/miniwob.click-button"  # easy sanity check env
+MAX_STEPS = 1  # click-button typically ends after 1 click
+POP = 64
+ELITE_FRAC = 0.2
+ITERS = 30
+SEED = 0
+
+# Feature sizes
+ROLE_LIST = ["button", "link", "menuitem", "tab", "option", "listitem", "checkbox", "textbox"]
+ROLE_DIM = len(ROLE_LIST)
+TEXT_HASH_DIM = 128
+GOAL_HASH_DIM = 128
+FEAT_DIM = ROLE_DIM + TEXT_HASH_DIM + GOAL_HASH_DIM + 1  # + bias
+
+# CEM parameters
+INIT_SIGMA = 1.0
+MIN_SIGMA = 0.05
+ALPHA = 0.8  # smoothing for mu/sigma updates
+
+# ---------- Utilities ----------
+def _hash_to_bins(s: str, dim: int) -> np.ndarray:
+    """Simple signed hashing into a bag-of-bins vector."""
+    v = np.zeros((dim,), dtype=np.float32)
+    if not s:
+        return v
+    # split into tokens-ish
+    toks = re.findall(r"[A-Za-z0-9]+", s.lower())
+    for t in toks[:64]:
+        h = hash(t)
+        idx = h % dim
+        sign = 1.0 if (h & 1) == 0 else -1.0
+        v[idx] += sign
+    # normalize to reduce length effects
+    n = np.linalg.norm(v)
+    if n > 1e-6:
+        v /= n
+    return v
+
+def _role_onehot(role: str) -> np.ndarray:
+    v = np.zeros((ROLE_DIM,), dtype=np.float32)
+    r = (role or "").lower().strip()
+    if r in ROLE_LIST:
+        v[ROLE_LIST.index(r)] = 1.0
+    return v
+
+def extract_clickables_from_axtree(obs: dict, max_items: int = 64):
+    """
+    Returns list of dicts:
+      {bid, role, name}
+    Uses obs['axtree_object'].
+    """
+    ax = obs.get("axtree_object")
+    if not isinstance(ax, dict):
+        return []
+    nodes = ax.get("nodes", []) or []
+    out = []
+    for n in nodes:
+        if n.get("ignored", False):
+            continue
+        bid = n.get("browsergym_id")
+        if bid is None:
+            continue
+        role = str((n.get("role") or {}).get("value", "")).lower()
+        name = str(((n.get("name") or {}).get("value")) or "")
+        # keep only likely interactive things
+        if role in {"button", "link", "menuitem", "tab", "option", "listitem", "checkbox", "textbox"}:
+            out.append({"bid": str(bid), "role": role, "name": name})
+        if len(out) >= max_items:
+            break
+    return out
+
+def featurize(goal: str, cand: dict) -> np.ndarray:
+    """
+    Feature = [role_onehot, hash(text), hash(goal), bias]
+    """
+    role_v = _role_onehot(cand.get("role", ""))
+    text_v = _hash_to_bins(cand.get("name", ""), TEXT_HASH_DIM)
+    goal_v = _hash_to_bins(goal or "", GOAL_HASH_DIM)
+    bias = np.array([1.0], dtype=np.float32)
+    return np.concatenate([role_v, text_v, goal_v, bias], axis=0)  # (FEAT_DIM,)
+
+def policy_choose(theta: np.ndarray, goal: str, clickables: list[dict]) -> str | None:
+    if not clickables:
+        return None
+    best = None
+    best_score = -1e9
+    for c in clickables:
+        x = featurize(goal, c)
+        s = float(theta @ x)
+        if s > best_score:
+            best_score = s
+            best = c["bid"]
+    return best
+
+def run_episode(theta: np.ndarray, env_id: str, seed: int) -> float:
+    """
+    Rollout using the current theta. Returns total reward.
+    """
+    env = gym.make(env_id)
+    try:
+        obs, info = env.reset(seed=seed)
+        if not isinstance(obs, dict):
+            return 0.0
+
+        goal = str(obs.get("goal") or "")
+        total = 0.0
+
+        for t in range(MAX_STEPS):
+            clickables = extract_clickables_from_axtree(obs)
+            bid = policy_choose(theta, goal, clickables)
+            if bid is None:
+                # No detected clickables: do nothing
+                action = "noop(200)"
+            else:
+                # IMPORTANT: BrowserGym highlevel uses lowercase action names like click('12')
+                action = f"click('{bid}')"
+
+            obs, r, terminated, truncated, info = env.step(action)
+            total += float(r)
+            if terminated or truncated:
+                break
+
+        return total
+    finally:
+        env.close()
+
+# ---------- CEM loop ----------
+def cem_train(env_id: str):
+    rng = np.random.default_rng(SEED)
+
+    mu = np.zeros((FEAT_DIM,), dtype=np.float32)
+    sigma = np.ones((FEAT_DIM,), dtype=np.float32) * INIT_SIGMA
+
+    elite_n = max(1, int(POP * ELITE_FRAC))
+
+    for it in range(ITERS):
+        thetas = rng.normal(loc=mu, scale=sigma, size=(POP, FEAT_DIM)).astype(np.float32)
+
+        # Evaluate population
+        returns = np.zeros((POP,), dtype=np.float32)
+        for i in range(POP):
+            # different seed per individual for robustness; you can also fix seed for determinism
+            returns[i] = run_episode(thetas[i], env_id, seed=1000 * it + i)
+
+        # Select elites
+        elite_idx = np.argsort(-returns)[:elite_n]
+        elite = thetas[elite_idx]
+        elite_ret = returns[elite_idx]
+
+        # Update distribution (with smoothing)
+        new_mu = elite.mean(axis=0)
+        new_sigma = elite.std(axis=0) + 1e-6
+
+        mu = (ALPHA * mu + (1 - ALPHA) * new_mu).astype(np.float32)
+        sigma = (ALPHA * sigma + (1 - ALPHA) * new_sigma).astype(np.float32)
+        sigma = np.maximum(sigma, MIN_SIGMA)
+
+        print(
+            f"[iter {it:03d}] "
+            f"ret_mean={returns.mean():.3f} ret_max={returns.max():.3f} "
+            f"elite_mean={elite_ret.mean():.3f} sigma_mean={sigma.mean():.3f}"
+        )
+
+    return mu, sigma
+
+def main():
+    if not os.environ.get("MINIWOB_URL"):
+        print('MINIWOB_URL is not set. Example: export MINIWOB_URL="http://127.0.0.1:8000/miniwob/"')
+        return 2
+
+    print("Training with CEM on:", ENV_ID)
+    mu, sigma = cem_train(ENV_ID)
+
+    print("\nTesting learned policy (mu):")
+    for k in range(5):
+        ret = run_episode(mu, ENV_ID, seed=999 + k)
+        print(f"  test {k}: return={ret}")
+
+    return 0
+
+if __name__ == "__main__":
+    raise SystemExit(main())

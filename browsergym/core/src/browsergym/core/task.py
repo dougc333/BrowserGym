@@ -93,6 +93,7 @@ class OpenEndedTask(AbstractBrowserTask):
 
     def setup(self, page: playwright.sync_api.Page) -> tuple[str, dict]:
         page.goto(self.start_url, timeout=10000)
+        #how to access the page? 
         return self.goal, {}
 
     def teardown(self) -> None:

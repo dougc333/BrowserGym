@@ -4,32 +4,51 @@ def list_actions(
     debug: bool = typer.Option(False, "--debug/--no-debug"),
 ):
     """
-    Probe which string-action verbs are accepted by the env parser.
+    Probe which BrowserGym high-level action functions are accepted by the env parser.
+
+    BrowserGym (HighLevelActionSet) uses lowercase functions like:
+      click('21'), fill('88','x'), scroll(0,200), noop(200), hover('21'), press('88','Enter'), ...
 
     Robust signals:
-      - If env.step(action) does NOT raise -> verb is recognized (even if args invalid)
-      - If it raises, check exception text for parse/unknown
-      - Also check obs['last_action'] / obs['last_action_error'] after the call
+      - If env.step(action) does NOT raise -> recognized
+      - If it raises, but NOT with "Invalid action type" / parse error -> recognized (bad args downstream)
+      - If obs['last_action'] == our action -> parser accepted it
     """
     import re
     import gymnasium as gym
-    import browsergym.miniwob  # registers envs
+    import browsergym.miniwob  # noqa: F401
 
     if env_id.endswith("-v0"):
         env_id = env_id[:-3]
 
+    # These are real BrowserGym HighLevelActionSet names + plausible calls.
+    # Note: bid is a *string* in the signature: click(bid: str) -> click('21')
     CANDIDATES = {
-        "CLICK": ["CLICK(0)", "CLICK(1)", "CLICK(10,10)"],
-        "TYPE": ['TYPE(0,"x")', 'TYPE(1,"x")'],
-        "SCROLL": ["SCROLL(down,100)", "SCROLL(up,100)"],
-        "WAIT": ["WAIT(10)", "WAIT(100)"],
-        "HOVER": ["HOVER(0)", "HOVER(1)", "HOVER(10,10)"],
-        "PRESS": ['PRESS("Enter")', 'PRESS("Tab")'],
-        "KEYPRESS": ['KEYPRESS("Enter")', 'KEYPRESS("Tab")'],
+        "click": ["click('0')", "click('1')", "click('999999')"],
+        "dblclick": ["dblclick('0')"],
+        "hover": ["hover('0')"],
+        "fill": ["fill('0','x')", "fill('1','x')"],
+        "clear": ["clear('0')"],
+        "focus": ["focus('0')"],
+        "press": ["press('0','Enter')", "press('0','Tab')"],
+        "scroll": ["scroll(0,200)", "scroll(0,-200)"],
+        "select_option": ["select_option('0','x')"],
+        "drag_and_drop": ["drag_and_drop('0','1')"],
+        "goto": ["goto('https://example.com')"],
+        "go_back": ["go_back()"],
+        "go_forward": ["go_forward()"],
+        "new_tab": ["new_tab()"],
+        "tab_close": ["tab_close()"],
+        "tab_focus": ["tab_focus(0)"],
+        "noop": ["noop(10)", "noop(200)"],
+        "send_msg_to_user": ["send_msg_to_user('hi')"],
+        "report_infeasible": ["report_infeasible('testing')"],
+        "upload_file": ["upload_file('0','/tmp/nope.txt')"],
     }
 
+    # If we see these, treat as NOT recognized by parser.
     UNKNOWN_PAT = re.compile(
-        r"(unknown action|unrecognized|invalid action|cannot parse|parse error|unsupported)",
+        r"(invalid action type|unknown action|unrecognized|cannot parse|parse error|unsupported)",
         re.IGNORECASE,
     )
 
@@ -48,10 +67,9 @@ def list_actions(
             ok = False
 
             for a in examples:
-                before_last_action = obs.get("last_action") if isinstance(obs, dict) else None
-
                 threw = False
                 exc_msg = ""
+
                 try:
                     obs2, reward, term, trunc, info2 = env.step(a)
                 except Exception as e:
@@ -62,16 +80,16 @@ def list_actions(
                 last_action = obs2.get("last_action") if isinstance(obs2, dict) else None
                 last_err = obs2.get("last_action_error") if isinstance(obs2, dict) else None
 
-                # Determine recognition:
-                # - If step didn't throw: recognized.
-                # - If it threw but NOT with "unknown/parse": still likely recognized (bad args downstream).
-                # - If obs.last_action updated to our string: recognized.
+                # Recognized if:
+                # - didn't throw, OR
+                # - threw but doesn't look like unknown/parse, OR
+                # - last_action matches our attempted string
                 if (not threw) or (threw and not looks_unknown(exc_msg)) or (last_action == a):
                     ok = True
 
                 if debug:
                     print(
-                        f"[{verb}] try={a!r} threw={threw} exc={exc_msg[:120]!r} "
+                        f"[{verb}] try={a!r} threw={threw} exc={exc_msg[:160]!r} "
                         f"last_action={last_action!r} last_err={last_err!r}"
                     )
 
@@ -89,10 +107,7 @@ def list_actions(
         for v in rejected:
             print(" -", v)
 
-        print(
-            "\nTip: For MiniWoB you should see at least CLICK / TYPE / SCROLL / WAIT "
-            "(even if particular signatures differ). Run with --debug to see why a verb was rejected."
-        )
+        print("\nTip: MiniWoB should recognize at least: click / fill / scroll / noop (and usually hover/press).")
 
     finally:
         env.close()

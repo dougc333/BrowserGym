@@ -69,6 +69,504 @@ def print_goal(
     finally:
         env.close()
 
+@app.command("list-actions")
+def list_actions(
+    env_id: str = typer.Option("browsergym/miniwob.click-menu", "--env"),
+    debug: bool = typer.Option(False, "--debug/--no-debug"),
+    only_clickables: bool = typer.Option(
+        True,
+        "--only-clickables/--all-bids",
+        help="If true, list only likely-clickable nodes (button/link/menuitem/etc).",
+    ),
+    max_bids: int = typer.Option(300, "--max-bids", help="Cap BID output"),
+):
+    """
+    1) Print whether we can access env.page (Playwright Page) from the env.
+    2) List BIDs from AXTree (optionally only clickables).
+    3) Probe which high-level action verbs are accepted by the env parser.
+    """
+    import re
+    import gymnasium as gym
+    import browsergym.miniwob  # registers envs
+
+    # --- candidates for action probing (lowercase high-level actions) ---
+    CANDIDATES = {
+        "click": ["click('0')", "click('1')", "click('999999')"],
+        "dblclick": ["dblclick('0')"],
+        "hover": ["hover('0')"],
+        "fill": ["fill('0','x')"],
+        "clear": ["clear('0')"],
+        "focus": ["focus('0')"],
+        "press": ["press('0','Enter')"],
+        "scroll": ["scroll(0, 200)", "scroll(0, -200)"],
+        "select_option": ["select_option('0','x')"],
+        "drag_and_drop": ["drag_and_drop('0','1')"],
+        "goto": ["goto('https://example.com')"],
+        "go_back": ["go_back()"],
+        "go_forward": ["go_forward()"],
+        "new_tab": ["new_tab()"],
+        "tab_close": ["tab_close()"],
+        "tab_focus": ["tab_focus(0)"],
+        "noop": ["noop()", "noop(10)"],
+        "send_msg_to_user": ["send_msg_to_user('hi')"],
+        "report_infeasible": ["report_infeasible('nope')"],
+        "upload_file": ["upload_file('0','/tmp/x')"],
+    }
+
+    UNKNOWN_PAT = re.compile(
+        r"(unknown action|unrecognized|invalid action|cannot parse|parse error|unsupported|invalid action type)",
+        re.IGNORECASE,
+    )
+
+    def looks_unknown(msg: str) -> bool:
+        return bool(UNKNOWN_PAT.search((msg or "").strip()))
+
+    def get_axtree(obs, info):
+        ax = None
+        if isinstance(obs, dict):
+            ax = (
+                obs.get("axtree_object")
+                or obs.get("axtree")
+                or obs.get("ax_tree")
+                or obs.get("accessibility_tree")
+            )
+        if ax is None and isinstance(info, dict):
+            ax = (
+                info.get("axtree_object")
+                or info.get("axtree")
+                or info.get("ax_tree")
+                or info.get("accessibility_tree")
+            )
+        return ax if isinstance(ax, dict) else None
+
+    def role_str(n) -> str:
+        return str((n.get("role") or {}).get("value", "")).strip().lower()
+
+    CLICKLIKE_ROLES = {"button", "link", "menuitem", "checkbox", "radio", "option", "tab", "textbox", "combobox"}
+
+    def extract_bids_from_axtree(ax) -> list[tuple[str, str, str]]:
+        """
+        Returns list of (bid, role, name). If only_clickables=True, filter by role.
+        """
+        out = []
+        for n in (ax.get("nodes", []) or []):
+            if n.get("ignored", False):
+                continue
+            bid = n.get("browsergym_id")
+            if bid is None:
+                continue
+            r = role_str(n)
+            if only_clickables and r not in CLICKLIKE_ROLES:
+                continue
+            name = str(((n.get("name") or {}).get("value")) or "")
+            out.append((str(bid), r or "", name))
+        # stable sort for readability
+        out.sort(key=lambda t: (t[1], t[2], t[0]))
+        return out
+
+    def get_page_accessible(env) -> bool:
+        """
+        True if we can reach a Playwright Page object from common locations.
+        (Does not guarantee it's alive, but usually enough for hover/evaluate.)
+        """
+        candidates = [
+            getattr(env, "page", None),
+            getattr(env, "_page", None),
+            getattr(getattr(env, "unwrapped", env), "page", None),
+            getattr(getattr(env, "unwrapped", env), "_page", None),
+            getattr(getattr(env, "task", None), "page", None),
+        ]
+        for p in candidates:
+            if p is None:
+                continue
+            # best-effort sanity check
+            if hasattr(p, "url") and (hasattr(p, "evaluate") or hasattr(p, "eval_on_selector")):
+                return True
+        return False
+
+    if env_id.endswith("-v0"):
+        env_id = env_id[:-3]
+
+    env = gym.make(env_id)
+    try:
+        obs, info = env.reset()
+        if not isinstance(obs, dict):
+            raise typer.BadParameter(f"Unexpected obs type: {type(obs)}")
+
+        page_ok = get_page_accessible(env)
+        typer.echo(f"Env: {env_id}")
+        typer.echo(f"Playwright page accessible from env: {page_ok}\n")
+
+        ax = get_axtree(obs, info)
+        if ax is None:
+            typer.echo("⚠️ No AXTree found in obs/info; cannot list BIDs.\n")
+        else:
+            bids = extract_bids_from_axtree(ax)
+            typer.echo(f"BIDs in AXTree ({'clickables' if only_clickables else 'all'}): {len(bids)}")
+            typer.echo(f"{'bid':>6}  {'role':<10}  name")
+            typer.echo("-" * 90)
+            for i, (bid, r, name) in enumerate(bids[:max_bids]):
+                typer.echo(f"{bid:>6}  {r:<10}  {name}")
+            if len(bids) > max_bids:
+                typer.echo(f"... ({len(bids) - max_bids} more)")
+            typer.echo("")
+
+        # --- probe verbs ---
+        recognized, rejected = [], []
+
+        for verb, examples in CANDIDATES.items():
+            ok = False
+            for a in examples:
+                threw = False
+                exc_msg = ""
+                try:
+                    obs2, reward, term, trunc, info2 = env.step(a)
+                except Exception as e:
+                    threw = True
+                    exc_msg = str(e)
+                    obs2 = obs
+
+                last_action = obs2.get("last_action") if isinstance(obs2, dict) else None
+                last_err = obs2.get("last_action_error") if isinstance(obs2, dict) else None
+
+                # recognition heuristic:
+                # - if step didn't throw -> accepted
+                # - if it threw but not "unknown/parse" -> likely accepted but args wrong
+                # - if last_action echoes our string -> accepted
+                if (not threw) or (threw and not looks_unknown(exc_msg)) or (last_action == a):
+                    ok = True
+
+                if debug:
+                    typer.echo(
+                        f"[{verb}] try={a!r} threw={threw} exc={exc_msg[:120]!r} "
+                        f"last_action={last_action!r} last_err={last_err!r}"
+                    )
+
+                if ok:
+                    break
+
+            (recognized if ok else rejected).append(verb)
+
+        typer.echo("Recognized verbs (probe):")
+        for v in recognized:
+            typer.echo(f" - {v}")
+
+        typer.echo("\nRejected / likely unsupported:")
+        for v in rejected:
+            typer.echo(f" - {v}")
+
+    finally:
+        env.close()
+@app.command("click-all-buttons")
+def click_all_buttons(
+    env_id: str = typer.Option("browsergym/miniwob.buy-ticket", "--env"),
+    out_dir: Path = typer.Option(Path("screenshots"), "--out-dir"),
+    wait_ms: int = typer.Option(200, "--wait-ms", help="noop() wait after each click (ms)"),
+    max_buttons: int = typer.Option(50, "--max-buttons", help="Safety cap"),
+):
+    """
+    For every AXTree node that is a button:
+      - save screenshot BEFORE env.step():  before_<env>_click_<bid>.png
+      - env.step("click('<bid>')")  (BrowserGym HighLevelActionSet)
+      - optionally env.step("noop(<wait_ms>)")
+      - save screenshot AFTER:       after_<env>_click_<bid>.png
+    """
+    import re
+    import gymnasium as gym
+    import browsergym.miniwob  # registers envs
+    import numpy as np
+    import cv2
+
+    def safe_name(s: str) -> str:
+        return re.sub(r"[^A-Za-z0-9._-]+", "_", s).strip("_")
+
+    def get_axtree(obs, info):
+        ax = None
+        if isinstance(obs, dict):
+            ax = (
+                obs.get("axtree_object")
+                or obs.get("axtree")
+                or obs.get("ax_tree")
+                or obs.get("accessibility_tree")
+            )
+        if ax is None and isinstance(info, dict):
+            ax = (
+                info.get("axtree_object")
+                or info.get("axtree")
+                or info.get("ax_tree")
+                or info.get("accessibility_tree")
+            )
+        return ax if isinstance(ax, dict) else None
+
+    def role_str(n) -> str:
+        return str((n.get("role") or {}).get("value", "")).strip().lower()
+
+    def chrome_role_int(n):
+        v = (n.get("chromeRole") or {}).get("value", None)
+        try:
+            return int(v) if v is not None else None
+        except Exception:
+            return None
+
+    def is_button_node(n) -> bool:
+        # robust: role contains "button" OR chromeRole == 9 (what you saw earlier)
+        return ("button" in role_str(n)) or (chrome_role_int(n) == 9)
+
+    def save_obs_screenshot(obs, path: Path) -> bool:
+        shot = obs.get("screenshot", None) if isinstance(obs, dict) else None
+        if shot is None or not isinstance(shot, np.ndarray):
+            return False
+        img = shot
+        if img.dtype != np.uint8:
+            img = np.clip(img, 0, 255).astype(np.uint8)
+        if img.ndim == 3 and img.shape[2] == 3:
+            bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        elif img.ndim == 3 and img.shape[2] == 4:
+            bgr = cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
+        else:
+            bgr = img
+        path.parent.mkdir(parents=True, exist_ok=True)
+        cv2.imwrite(str(path), bgr)
+        return True
+
+    # Friendly: drop -v0 if present
+    if env_id.endswith("-v0"):
+        env_id = env_id[:-3]
+
+    safe_env = safe_name(env_id)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    env = gym.make(env_id)
+    try:
+        obs, info = env.reset()
+        if not isinstance(obs, dict):
+            raise typer.BadParameter(f"Unexpected obs type: {type(obs)}")
+
+        ax = get_axtree(obs, info)
+        if ax is None:
+            raise typer.BadParameter(f"No AXTree found. obs keys={list(obs.keys())}")
+
+        # collect unique button bids
+        bids = []
+        seen = set()
+        for n in (ax.get("nodes", []) or []):
+            if n.get("ignored", False):
+                continue
+            if not is_button_node(n):
+                continue
+            bid = n.get("browsergym_id")
+            if bid is None:
+                continue
+            bid = str(bid)
+            if bid in seen:
+                continue
+            seen.add(bid)
+            name = str(((n.get("name") or {}).get("value")) or "")
+            bids.append((bid, name))
+
+        if not bids:
+            typer.echo("No buttons found in AXTree.")
+            return
+
+        if len(bids) > max_buttons:
+            bids = bids[:max_buttons]
+            typer.echo(f"⚠️ Capped buttons to first {max_buttons}.")
+
+        typer.echo(f"Found {len(bids)} button(s). Clicking each...\n")
+
+        for bid, name in bids:
+            before_path = out_dir / f"before_{safe_env}_click_{bid}.png"
+            after_path = out_dir / f"after_{safe_env}_click_{bid}.png"
+
+            ok_before = save_obs_screenshot(obs, before_path)
+            if not ok_before:
+                typer.echo(f"⚠️ Could not save BEFORE screenshot (missing obs['screenshot'] ndarray). bid={bid}")
+
+            action = f"click('{bid}')"
+            typer.echo(f"CLICK {bid}  name={name!r}  action={action}")
+
+            obs2, reward, terminated, truncated, info2 = env.step(action)
+
+            # optional settle time for UI updates to appear in next screenshot
+            if wait_ms and (not terminated) and (not truncated):
+                obs2, _r2, terminated, truncated, info2 = env.step(f"noop({float(wait_ms)})")
+
+            ok_after = save_obs_screenshot(obs2, after_path)
+            if not ok_after:
+                typer.echo(f"⚠️ Could not save AFTER screenshot. bid={bid}")
+
+            last_err = obs2.get("last_action_error") if isinstance(obs2, dict) else None
+            if last_err:
+                typer.echo(f"  last_action_error: {last_err}")
+
+            typer.echo(f"  reward={reward} terminated={terminated} truncated={truncated}")
+            typer.echo(f"  saved: {before_path}  {after_path}\n")
+
+            obs, info = obs2, info2
+
+            if terminated or truncated:
+                typer.echo("Episode ended; stopping further clicks.")
+                break
+
+    finally:
+        env.close()
+#obg list-roles
+#obg list-roles --env browsergym/miniwob.buy-ticket
+#obg list-roles --per-role 25
+#obg list-roles --per-role -1 --top 999   # dump everything (be careful)
+@app.command("list-roles")
+def list_roles(
+    env_id: str = typer.Option(
+        "browsergym/miniwob.click-menu",
+        "--env",
+        help="Gymnasium env id",
+    ),
+    top: int = typer.Option(30, "--top", help="How many top roles to show"),
+    per_role: int = typer.Option(
+        10,
+        "--per-role",
+        help="How many nodes to print per role (0 = none, -1 = all)",
+    ),
+    include_ignored: bool = typer.Option(
+        False,
+        "--include-ignored/--no-include-ignored",
+        help="Include ignored AX nodes",
+    ),
+):
+    """Print role/chromeRole frequency + grouped node tables from AXTree."""
+    import gymnasium as gym
+    import browsergym.miniwob  # registers envs
+    from collections import Counter, defaultdict
+
+    def get_axtree(obs, info):
+        ax = None
+        if isinstance(obs, dict):
+            ax = (
+                obs.get("axtree_object")
+                or obs.get("axtree")
+                or obs.get("ax_tree")
+                or obs.get("accessibility_tree")
+            )
+        if ax is None and isinstance(info, dict):
+            ax = (
+                info.get("axtree_object")
+                or info.get("axtree")
+                or info.get("ax_tree")
+                or info.get("accessibility_tree")
+            )
+        if not isinstance(ax, dict) or "nodes" not in ax:
+            raise typer.BadParameter(
+                f"No AXTree found for {env_id}. "
+                f"obs keys={list(obs.keys()) if isinstance(obs, dict) else type(obs)}"
+            )
+        return ax
+
+    def props_to_dict(props):
+        out = {}
+        for p in props or []:
+            k = p.get("name")
+            v = (p.get("value") or {}).get("value")
+            if k is not None:
+                out[str(k)] = v
+        return out
+
+    def role_str(n) -> str:
+        return str((n.get("role") or {}).get("value", "")).strip().lower() or "<empty>"
+
+    def chrome_role_int(n):
+        v = (n.get("chromeRole") or {}).get("value", None)
+        try:
+            return int(v) if v is not None else None
+        except Exception:
+            return None
+
+    if env_id.endswith("-v0"):
+        env_id = env_id[:-3]
+
+    env = gym.make(env_id)
+    try:
+        obs, info = env.reset()
+        if not isinstance(obs, dict):
+            raise typer.BadParameter(f"Unexpected obs type: {type(obs)}")
+
+        ax = get_axtree(obs, info)
+        nodes = ax.get("nodes", []) or []
+
+        rc = Counter()
+        cc = Counter()
+        by_role = defaultdict(list)
+
+        for n in nodes:
+            if (not include_ignored) and n.get("ignored", False):
+                continue
+
+            r = role_str(n)
+            rc[r] += 1
+
+            cr = chrome_role_int(n)
+            if cr is not None:
+                cc[cr] += 1
+
+            bid = n.get("browsergym_id")
+            node_id = n.get("nodeId")
+            name = str(((n.get("name") or {}).get("value")) or "")
+            props = props_to_dict(n.get("properties", []))
+
+            by_role[r].append(
+                {
+                    "nodeId": "" if node_id is None else str(node_id),
+                    "bid": "" if bid is None else str(bid),
+                    "focusable": props.get("focusable", None),
+                    "invalid": props.get("invalid", None),
+                    "chromeRole": "" if cr is None else str(cr),
+                    "name": name,
+                }
+            )
+
+        typer.echo(f"Env: {env_id}")
+        typer.echo(f"Nodes: {len(nodes)} (include_ignored={include_ignored})\n")
+
+        typer.echo("Top role.value strings:")
+        for k, v in rc.most_common(top):
+            typer.echo(f"  {k:<24} {v}")
+        typer.echo("")
+
+        typer.echo("Top chromeRole numeric values:")
+        for k, v in cc.most_common(top):
+            typer.echo(f"  {k:<24} {v}")
+        typer.echo("")
+
+        if per_role == 0:
+            return
+
+        # Print grouped tables in order of most common roles
+        for role_name, _count in rc.most_common(top):
+            rows = by_role.get(role_name) or []
+            if not rows:
+                continue
+
+            typer.echo(f"=== role: {role_name} (n={len(rows)}) ===")
+            typer.echo(
+                f"{'nodeId':>6}  {'bid':>6}  {'focusable':>9}  {'invalid':>7}  {'chrome':>6}  name"
+            )
+            typer.echo("-" * 120)
+
+            limit = len(rows) if per_role < 0 else min(per_role, len(rows))
+            for i in range(limit):
+                s = rows[i]
+                typer.echo(
+                    f"{s['nodeId']:>6}  {s['bid']:>6}  "
+                    f"{str(s['focusable']):>9}  {str(s['invalid']):>7}  "
+                    f"{s['chromeRole']:>6}  {s['name']}"
+                )
+
+            if limit < len(rows):
+                typer.echo(f"... ({len(rows) - limit} more)")
+            typer.echo("")
+
+    finally:
+        env.close()
+
 @app.command("open-webkit")
 def open_webkit(
     env_id: str = typer.Option(

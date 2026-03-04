@@ -443,11 +443,13 @@ document.addEventListener("visibilitychange", () => {
             truncated: whether the episode is truncated or not
             info: additional information about the step
         """
+        print("env step action:",action)
         self.last_action = action
         info, send_message_to_user, report_infeasible_instructions = self.pre_step()
         try:
             if self.action_mapping:
                 code = self.action_mapping(action)
+                print("env step self.action_mapping true: code:",code)
             else:
                 code = action
             execute_python_code(
@@ -456,6 +458,7 @@ document.addEventListener("visibilitychange", () => {
                 send_message_to_user=send_message_to_user,
                 report_infeasible_instructions=report_infeasible_instructions,
             )
+            # we set this to T/F? or the action and how to assign a negative reward
             self.last_action_error = ""
         except Exception as e:
             self.last_action_error = f"{type(e).__name__}: {e}"
@@ -481,6 +484,7 @@ document.addEventListener("visibilitychange", () => {
             info: additional information about the step
         """
         logger.debug("Action executed")
+        print("post step action executed")
         info["action_exec_stop"] = time.time()
 
         info["wait_for_page_loading_start"] = time.time()

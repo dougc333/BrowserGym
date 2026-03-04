@@ -1,21 +1,35 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 import os, sys
+from browsergym.core.action.functions import page
 import gymnasium as gym
 import browsergym.miniwob  # noqa: F401
 ENV_ID = 'browsergym/miniwob.click-checkboxes'
+from browsergym.core.action.highlevel import HighLevelActionSet
+from browsergym.core.action.python import PythonActionSet
+
 #KNOWN_GOAL = 'Select cJUj, fGWU5A5, Z45A8v, RqM4hC and click Submit.'
 ACTIONS = []
 def main() -> int:
+    import logging
+
+    logging.basicConfig(level=logging.WARNING)  # default quiet
+    logging.getLogger("browsergym").setLevel(logging.DEBUG)
     env_id = sys.argv[1] if len(sys.argv) > 1 else ENV_ID
     if not os.environ.get("MINIWOB_URL"):
         print("MINIWOB_URL is not set", file=sys.stderr); return 2
     env = gym.make(env_id)
     try:
         obs, info = env.reset()
-        print(f"Goal: {(obs.get('goal') if isinstance(obs, dict) else "no goal!!!")}")
+        print(f"Goal: {(obs.get('goal') if isinstance(obs, dict) else 'no goal!!!')}")
         reward = None
         # where are the targets?
+        # where is ACTIONS?
+        # action_set = HighLevelActionSet("default")
+        # print(f"action_set:{action_set}")
+        paction_set = PythonActionSet()
+        print(f"paction_set:{PythonActionSet}")
+        print("page:",page)
         
         for a in ACTIONS:
             print(f"Action: {a}")
@@ -28,5 +42,6 @@ def main() -> int:
         return 0 if (reward is not None and reward > 0) else 1
     finally:
         env.close()
+
 if __name__ == '__main__':
     raise SystemExit(main())
