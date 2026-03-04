@@ -1,0 +1,20 @@
+GOAL:
+{goal}
+
+OBSERVATION:
+URL: {url}
+STEP: {t}
+
+AXTREE (truncated to most relevant nodes):
+{axtree_snippet}
+
+SCREENSHOT:
+{optional: attach image or provide "not provided"}
+
+RECENT HISTORY (last 3):
+{history}
+
+IMPORTANT:
+- Choose a BID from the AXTREE.
+- If you type, choose the most appropriate input BID and include the exact text.
+- If stuck, try a different BID or use scroll/wait.

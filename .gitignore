@@ -152,7 +152,7 @@ tests/assistantbench/assistantbench-predictions-test.jsonl
 bg_wl_data/
 
 # miniwob setup
-miniwob-plusplus/
+#miniwob-plusplus/
 
 uv.lock
 
