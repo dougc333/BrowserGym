@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* one hue per role in the RL loop, used everywhere for consistency */
+  --color-env: #38bdf8;     /* environment / Chromium */
+  --color-obs: #a78bfa;     /* observation / AXTree */
+  --color-policy: #f59e0b;  /* policy / Claude */
+  --color-act: #fb7185;     /* action */
+  --color-reward: #34d399;  /* reward / success */
+
+  --color-ink-950: #0b0d10;
+  --color-ink-900: #111418;
+  --color-ink-850: #161a1f;
+  --color-ink-800: #1d2228;
+  --color-ink-700: #2a3038;
+  --color-ink-500: #5b6573;
+  --color-ink-300: #a5afbb;
+  --color-ink-100: #e6eaef;
+}
+
+html, body, #root { height: 100%; }
+body {
+  @apply bg-ink-950 text-ink-100 font-sans antialiased;
+  background-image: radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.035) 1px, transparent 0);
+  background-size: 22px 22px;
+}
+
+::selection { background: rgb(245 158 11 / 0.35); }
+
+.scroll-thin { scrollbar-width: thin; scrollbar-color: var(--color-ink-700) transparent; }
+
+@keyframes flow { to { stroke-dashoffset: -24; } }
+.flow { stroke-dasharray: 6 6; animation: flow 0.6s linear infinite; }
+
+@keyframes ping-once { 0% { transform: scale(1); opacity: .9 } 100% { transform: scale(1.8); opacity: 0 } }
+.ping-once { animation: ping-once 0.9s ease-out 1; transform-box: fill-box; transform-origin: center; }
+
+@keyframes caret { 50% { opacity: 0 } }
+.caret::after { content: "▍"; animation: caret 1s steps(1) infinite; color: var(--color-policy); }

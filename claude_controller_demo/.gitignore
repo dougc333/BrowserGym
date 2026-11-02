@@ -1,0 +1,6 @@
+runs/
+web/node_modules/
+web/dist/
+web/*.tsbuildinfo
+.venv/
+__pycache__/
