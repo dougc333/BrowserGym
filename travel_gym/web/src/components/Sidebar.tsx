@@ -76,19 +76,37 @@ function NewRunForm() {
           Policy
           <select value={form.policy} onChange={(e) => setForm({ policy: e.target.value as typeof form.policy })}
             className="mt-0.5 w-full rounded-md border border-slate-300 px-1 py-1 text-sm text-slate-900">
-            <option value="scripted">Scripted</option>
-            <option value="claude" disabled={!config?.has_api_key}>Claude</option>
-            <option value="openai">OpenAI-compat</option>
+            <optgroup label="Browser (clicks the site)">
+              <option value="scripted">Scripted</option>
+              <option value="claude" disabled={!config?.has_api_key}>Claude</option>
+              <option value="nous" disabled={!config?.has_nous_key}>Nous Hermes</option>
+              <option value="openai">OpenAI-compat</option>
+            </optgroup>
+            <optgroup label="MCP (calls tools)">
+              <option value="mcp-scripted">Scripted · MCP</option>
+              <option value="mcp-claude" disabled={!config?.has_api_key}>Claude · MCP</option>
+              <option value="mcp-nous" disabled={!config?.has_nous_key}>Nous Hermes · MCP</option>
+              <option value="mcp-openai">OpenAI-compat · MCP</option>
+            </optgroup>
           </select>
         </label>
       </div>
-      {form.policy === "claude" && (
+      {(form.policy === "claude" || form.policy === "mcp-claude") && (
         <select value={form.model ?? config?.default_model} onChange={(e) => setForm({ model: e.target.value })}
           className="w-full rounded-md border border-slate-300 px-2 py-1 text-sm">
           {config?.models.map((m) => <option key={m}>{m}</option>)}
         </select>
       )}
-      {form.policy === "openai" && (
+      {(form.policy === "nous" || form.policy === "mcp-nous") && (
+        <>
+          <input list="nous-models" placeholder={config?.nous_default_model} value={form.model ?? ""}
+            onChange={(e) => setForm({ model: e.target.value || null })}
+            className="w-full rounded-md border border-slate-300 px-2 py-1 font-mono text-xs" />
+          <datalist id="nous-models">{config?.nous_models.map((m) => <option key={m} value={m} />)}</datalist>
+          <p className="text-[11px] text-slate-500">Nous Portal model id · {config?.nous_base_url}</p>
+        </>
+      )}
+      {(form.policy === "openai" || form.policy === "mcp-openai") && (
         <input placeholder="qwen2.5:7b-instruct@http://localhost:11434/v1" value={form.model ?? ""}
           onChange={(e) => setForm({ model: e.target.value })}
           className="w-full rounded-md border border-slate-300 px-2 py-1 font-mono text-xs" />
@@ -119,7 +137,8 @@ function RunsList() {
                 selected === r.id && "bg-sky-50")}>
               <div className="flex items-center gap-2">
                 <span className="font-mono text-[11px] text-slate-500">{r.id.slice(9)}</span>
-                <Pill tone={r.policy === "claude" ? "violet" : r.policy === "openai" ? "sky" : "slate"}>{r.model ?? r.policy}</Pill>
+                <Pill tone={r.policy.startsWith("mcp") ? "amber" : "sky"}>{r.policy.startsWith("mcp") ? "MCP" : "browser"}</Pill>
+                <Pill tone={r.policy.endsWith("claude") ? "violet" : "slate"}>{r.model ?? r.policy.replace("mcp-", "")}</Pill>
                 <span className="ml-auto">
                   {r.status === "done" ? (
                     <Pill tone={r.success ? "green" : "red"}>{r.success ? "optimal" : r.outcome?.booked ? "suboptimal" : "no booking"}</Pill>

@@ -12,8 +12,9 @@ reward is computed from the database, never from what the page or the agent says
 ```
             data/travel.db (episodes, flights, bookings, runs, steps)
                  ▲ reads/writes                         ▲ reads ground truth
-  website.py :8100  ◀── browser (Chromium) ──  agent loop  ── app.py :8000 ──▶ React dashboard
-  search · results · details · review · book      observe → decide → act → record
+  website.py :8100  ◀── browser (Chromium) ──┐
+                                             ├─ agent loop ── app.py :8000 ──▶ React dashboard
+  mcp_server.py (stdio) ◀── MCP tool calls ──┘   observe → decide → act → record
 ```
 
 The website and the dashboard API run on different ports on purpose: the agent's
@@ -55,6 +56,75 @@ about 35), `hard` (15 searches over 45 pages, about 190), `extreme` (21 searches
 | `scripted` | Systematic searcher with no model. Enumerates every allowed airport and date, pages through results, opens only candidates that could still beat the best total, reads the true total on the review page, books the best. Uses only what the site shows. Optimal on every preset tested; a free teacher for behavior cloning. |
 | `claude` | Claude with the prompt in `server/policies.py` (needs `ANTHROPIC_API_KEY`). |
 | `openai` | Same prompt via any OpenAI-compatible server, e.g. `qwen2.5:7b-instruct@http://localhost:11434/v1`. |
+| `mcp-scripted` | The scripted searcher, calling MCP tools instead of clicking. |
+| `mcp-claude` | Claude with the MCP server's tools, in a normal tool-use conversation. |
+
+## The same task over MCP
+
+`server/mcp_server.py` exposes the travel site as an MCP server (stdio) with six tools:
+`get_trip_request`, `list_airports`, `search_flights` (paginated, optional sort),
+`get_flight_details`, `price_quote` (the true total), and `book_flight` (first booking is
+final). They share one implementation (`travel_api.py`) with exactly the website's rules,
+so hidden fees stay hidden and the same decoys and fee trap apply. The checker is unchanged.
+
+For each MCP run the runner starts the server for that episode, lists its tools and
+loops: the policy chooses tool calls, each call goes over MCP, and each call is recorded
+as one step. Steps are stored with `mcp://` URLs shaped like the website's
+(`.../results?from=DCA&date=...&page=2`, `.../review?flight=...`), so the coverage grid,
+fares table and diagnosis work the same for browser and MCP runs. In the dashboard, MCP
+steps show the tool call and the JSON result instead of a screenshot.
+
+`mcp-claude` keeps the full conversation, but tool results older than the last 12 are
+replaced with a stub to bound the context (client-side context editing), and the agent
+is told to write a running "BEST so far" line after every quote, since its own messages
+are never cleared.
+
+**Browser vs MCP on identical episodes (scripted agents, same seeds):**
+
+| Episode | Browser steps | MCP steps | Browser time | MCP time | Pages and quotes | Result |
+|---|---:|---:|---:|---:|---|---|
+| medium, seed 2 | 32 | 10 | 26 s | 1 s | same | both optimal |
+| hard, seed 4 | 201 | 63 | 157 s | 1 s | same (45 pages, 16 quotes) | both optimal |
+| hard, seed 11 | 186 | 60 | 145 s | 1 s | same (45 pages, 13 quotes) | both optimal |
+| extreme, seed 5 | 225 | 93 | 176 s | 1 s | same (84 pages, 7 quotes) | both optimal |
+
+Same search, same decisions; the browser version spends its extra steps on form filling,
+clicking into details and going back. That gap (plus visual grounding) is what a browser
+agent must learn and an API agent doesn't. Comparing `claude` with `mcp-claude` on the same
+seeds shows how much of a model's difficulty is the web interface versus the search itself.
+
+## Nous Research (Hermes) models
+
+Policies `nous` (browser) and `mcp-nous` (MCP) run Hermes models through the Nous Portal's
+OpenAI-compatible API; `mcp-openai` runs the same MCP loop against any OpenAI-compatible
+server given as `model@url` (for example Hermes in Ollama: `hermes3:8b@http://localhost:11434/v1`).
+
+```sh
+export NOUS_API_KEY=...                       # from your Nous Portal account
+export NOUS_MODEL=Hermes-4-70B                # optional; or pick per run in the dashboard
+export NOUS_BASE_URL=https://inference-api.nousresearch.com/v1   # optional; check your portal's API docs
+```
+
+Restart `uvicorn app:app` after setting them; the top bar shows "Nous Hermes" when the key is
+found. The MCP loop uses Hermes' native function-calling format: tool schemas inside `<tools>`
+in the system prompt, calls as `<tool_call>{"name": ..., "arguments": ...}</tool_call>`, and
+results returned in `<tool_response>`. That works whether or not a server supports the OpenAI
+`tools` parameter. Malformed calls get a correction message instead of crashing the run, and
+`<think>` blocks are kept as the step's thought.
+
+The model ids and base URL above are defaults I could not verify against the live API; if a
+call fails, list your account's models with
+`curl -H "Authorization: Bearer $NOUS_API_KEY" $NOUS_BASE_URL/models` and set `NOUS_MODEL`.
+
+**Use the server from Claude Code** (or any MCP client) to try the task by hand:
+
+```sh
+claude mcp add travel-gym -- python ~/BrowserGym/travel_gym/server/mcp_server.py --new hard --seed 7
+```
+
+Then ask Claude: "Call get_trip_request and complete the request." The server prints the
+episode id to stderr; check the result with
+`python ~/BrowserGym/travel_gym/server/mcp_server.py --check <episode id>`.
 
 ## The dashboard
 
@@ -109,7 +179,7 @@ obs, info = env.reset(seed=7)
 cd travel_gym/server && python -m pytest -q test_travel.py
 ```
 
-Covers reproducible generation, a unique optimum, decoys that are cheaper but invalid,
+Covers reproducible generation, website/MCP parity (same results, same order, fees hidden), an end-to-end MCP episode, a unique optimum, decoys that are cheaper but invalid,
 the fee trap, exact scoring, and reward-hacking probes: booking a cheaper decoy,
 changing travelers or bags to lower the price, booking twice, a fake confirmation page,
 a flight from another episode, and checking that no page reveals the answer.

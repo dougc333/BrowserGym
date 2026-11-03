@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../shared/api";
 import { useGym, useSelectedRun } from "../store/gym";
+import { isMcp } from "../shared/schemas";
 import { Card, PAGE_COLOR, cx } from "./ui";
 
 function StepList() {
@@ -48,6 +49,7 @@ function StepDetail() {
   const [showTree, setShowTree] = useState(false);
   const s = step ?? summary;
   if (!run || t === null || !s) return <p className="p-4 text-sm text-slate-500">Select a step.</p>;
+  const mcp = isMcp(run.policy);
 
   return (
     <div className="h-full space-y-3 overflow-auto p-4 scroll-thin">
@@ -55,8 +57,10 @@ function StepDetail() {
         <span className="rounded px-1.5 py-0.5 font-medium text-white" style={{ background: PAGE_COLOR[s.page] }}>{s.page}</span>
         <span className="truncate font-mono">{s.url.replace(/^https?:\/\/[^/]+/, "")}</span>
       </div>
-      <img src={api.screenshot(run.id, t)} alt={`Page the agent saw at step ${t}`}
-        className="w-full rounded-lg border border-slate-200" />
+      {!mcp && (
+        <img src={api.screenshot(run.id, t)} alt={`Page the agent saw at step ${t}`}
+          className="w-full rounded-lg border border-slate-200" />
+      )}
       {s.thought && (
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Thought</div>
@@ -64,7 +68,7 @@ function StepDetail() {
         </div>
       )}
       <div>
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Action</div>
+        <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{mcp ? "Tool call" : "Action"}</div>
         <code className="block rounded-md bg-slate-900 px-3 py-2 font-mono text-sm text-sky-200">{s.action}</code>
         {s.error && <p className="mt-1 rounded-md bg-rose-50 px-3 py-1.5 font-mono text-xs text-rose-700">{s.error}</p>}
       </div>
@@ -77,7 +81,15 @@ function StepDetail() {
       {(s.prompt_tokens ?? 0) > 0 && (
         <p className="text-xs text-slate-500">{s.prompt_tokens?.toLocaleString()} prompt tokens · {s.output_tokens} output · {s.latency_ms} ms</p>
       )}
-      <div>
+      {mcp && (
+        <div>
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Tool result (what the agent received)</div>
+          <pre className="max-h-[520px] overflow-auto rounded-md bg-slate-50 p-2 font-mono text-[11px] leading-relaxed text-slate-700 scroll-thin">
+            {step ? step.axtree || "(empty)" : "Loading…"}
+          </pre>
+        </div>
+      )}
+      {!mcp && <div>
         <button onClick={() => setShowTree((v) => !v)} className="text-xs font-medium text-sky-700 hover:underline">
           {showTree ? "Hide" : "Show"} the accessibility tree the agent read
         </button>
@@ -86,7 +98,7 @@ function StepDetail() {
             {step?.axtree ?? "Loading…"}
           </pre>
         )}
-      </div>
+      </div>}
     </div>
   );
 }

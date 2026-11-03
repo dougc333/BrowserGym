@@ -90,10 +90,55 @@ class Runner:
                          [json.dumps(v) if isinstance(v, (dict, list)) else v for v in fields.values()] + [run_id])
         self.emit({"type": "run", "run": get_run(run_id)})
 
+    def _run_mcp(self, run_id: str, cfg: RunConfig) -> None:
+        """Same task through the MCP server: no browser; every tool call is one recorded step."""
+        import asyncio
+
+        from generator import Difficulty, generate_episode
+        from mcp_agent import StepRecord, run_mcp
+
+        ep = generate_episode(cfg.seed, Difficulty(**cfg.difficulty))
+        self._update(run_id, episode_id=ep["id"])
+        conn = connect()
+        counters = {"t": 0, "in": 0, "out": 0}
+
+        def record(s: StepRecord) -> None:
+            t = counters["t"]
+            counters["t"] += 1
+            counters["in"] += s.input_tokens
+            counters["out"] += s.output_tokens
+            with conn:
+                conn.execute("INSERT INTO steps VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                             (run_id, t, s.url, page_type(s.url), s.thought, None, s.action, s.error, s.observation,
+                              s.input_tokens, s.output_tokens, s.latency_ms))
+                conn.execute("UPDATE runs SET n_steps=?, input_tokens=?, output_tokens=? WHERE id=?",
+                             (t + 1, counters["in"], counters["out"], run_id))
+            self.emit({"type": "step", "run_id": run_id, "step": get_step(run_id, t, with_axtree=False)})
+
+        # Playwright's sync API leaves an event loop attached to the env thread after any
+        # browser run, so the MCP session gets a fresh thread with its own loop.
+        with ThreadPoolExecutor(max_workers=1, thread_name_prefix="travel-mcp") as ex:
+            status = ex.submit(asyncio.run, run_mcp(cfg.policy, cfg.model, ep, cfg.max_steps, record,
+                                                    lambda: self.stop_flags[run_id].is_set())).result()
+        outcome = check(ep["id"])
+        if not outcome["booked"]:
+            last = conn.execute("SELECT action FROM steps WHERE run_id=? ORDER BY t DESC LIMIT 1", (run_id,)).fetchone()
+            if status == "stopped":
+                outcome["reason"] = "no booking (stopped)"
+            elif last and last["action"] == "(end of turn)":
+                outcome["reason"] = "agent ended without booking"
+            else:
+                outcome["reason"] = "no booking within the step budget"
+        self._update(run_id, status=status, outcome=outcome, reward=outcome["reward"],
+                     success=int(outcome["success"]), ended_at=time.time())
+
     def _run(self, run_id: str, cfg: RunConfig) -> None:
         env = None
         try:
             self._update(run_id, status="running", started_at=time.time())
+            if cfg.policy.startswith("mcp-"):
+                self._run_mcp(run_id, cfg)
+                return
             policy = make_policy(cfg.policy, cfg.model)
             env = gym.make("browsergym/travel.search", task_kwargs={"difficulty": cfg.difficulty},
                            headless=cfg.headless, action_mapping=ACTION_SET.to_python_code)

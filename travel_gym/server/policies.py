@@ -29,6 +29,20 @@ ACTION_SET = HighLevelActionSet(subsets=["bid", "nav", "chat", "infeas"], strict
 DEFAULT_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-5-5")
 MODELS = ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"]
 
+# Nous Research (Hermes models) through the Nous Portal's OpenAI-compatible API.
+# Check the base URL and model ids in your Nous Portal account; both can be overridden.
+NOUS_BASE_URL = os.environ.get("NOUS_BASE_URL", "https://inference-api.nousresearch.com/v1")
+NOUS_DEFAULT_MODEL = os.environ.get("NOUS_MODEL", "Hermes-4-70B")
+NOUS_MODELS = ["Hermes-4-70B", "Hermes-4-405B"]
+
+
+def openai_compatible(policy: str, model: str | None) -> tuple[str, str, str]:
+    """(model, base_url, api_key) for 'nous' / 'mcp-nous' and 'openai' / 'mcp-openai' (model@url)."""
+    if policy.endswith("nous"):
+        return model or NOUS_DEFAULT_MODEL, NOUS_BASE_URL, os.environ.get("NOUS_API_KEY", "")
+    m, _, url = (model or "").rpartition("@")
+    return m, url or "http://localhost:11434/v1", os.environ.get("OPENAI_API_KEY", "not-needed")
+
 
 @dataclass
 class Decision:
@@ -132,11 +146,12 @@ class ClaudePolicy:
 class OpenAIPolicy:
     name = "openai"
 
-    def __init__(self, model: str, base_url: str):
+    def __init__(self, model: str, base_url: str, api_key: str = ""):
         import json
         import urllib.request
 
         self.model, self.base_url, self._json, self._req = model, base_url.rstrip("/"), json, urllib.request
+        self.api_key = api_key or os.environ.get("OPENAI_API_KEY", "not-needed")
 
     def __call__(self, ctx: StepContext) -> Decision:
         prompt = build_prompt(ctx)
@@ -145,9 +160,16 @@ class OpenAIPolicy:
         t0 = time.time()
         req = self._req.Request(f"{self.base_url}/chat/completions", data=self._json.dumps(body).encode(),
                                 headers={"Content-Type": "application/json",
-                                         "Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY', 'x')}"})
-        with self._req.urlopen(req, timeout=300) as resp:
-            d = self._json.loads(resp.read())
+                                         "Authorization": f"Bearer {self.api_key}"})
+        for attempt in range(6):
+            try:
+                with self._req.urlopen(req, timeout=300) as resp:
+                    d = self._json.loads(resp.read())
+                break
+            except Exception as e:
+                if attempt == 5 or not any(s in str(e) for s in ("429", "500", "502", "503", "timed out")):
+                    raise
+                time.sleep(2 ** attempt)
         text = d["choices"][0]["message"].get("content") or ""
         u = d.get("usage") or {}
         thought, action, notes = parse(text, ctx.notes)
@@ -323,7 +345,6 @@ def make_policy(name: str, model: str | None = None):
         return ScriptedPolicy()
     if name == "claude":
         return ClaudePolicy(model)
-    if name == "openai":
-        m, _, url = (model or "").rpartition("@")
-        return OpenAIPolicy(m, url or "http://localhost:11434/v1")
+    if name in ("openai", "nous"):
+        return OpenAIPolicy(*openai_compatible(name, model))
     raise ValueError(name)

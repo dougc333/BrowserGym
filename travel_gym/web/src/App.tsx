@@ -30,7 +30,11 @@ function TopBar() {
         </span>
         <span className="flex items-center gap-1.5">
           <span className={cx("h-2 w-2 rounded-full", config?.has_api_key ? "bg-emerald-500" : "bg-slate-300")} />
-          {config?.has_api_key ? "Claude available" : "no API key: scripted / OpenAI-compatible only"}
+          {config?.has_api_key ? "Claude" : "no Claude key"}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className={cx("h-2 w-2 rounded-full", config?.has_nous_key ? "bg-emerald-500" : "bg-slate-300")} />
+          {config?.has_nous_key ? "Nous Hermes" : "no NOUS_API_KEY"}
         </span>
       </div>
     </header>

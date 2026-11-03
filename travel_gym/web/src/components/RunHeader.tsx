@@ -55,12 +55,14 @@ export function RunHeader() {
                 <span className={o.success ? "text-emerald-600" : "text-rose-600"}>{o.success ? "Optimal" : o.booked ? "Suboptimal" : "No booking"}</span>
               ) : <span className={run.status === "error" ? "text-rose-600" : "text-amber-600"}>{run.status}</span>
             } sub={o?.reason} />
+            <Stat label="Channel" value={run.policy.startsWith("mcp") ? "MCP tools" : "Browser"}
+              sub={run.model ?? run.policy.replace("mcp-", "")} />
             <Stat label="Steps" value={`${run.n_steps} / ${run.max_steps}`} sub={`${elapsed}s`} />
             <Stat label="Booked" value={money(o?.true_total_for_task ?? o?.booked_total)} sub={o?.booked ? `flight #${o.booked_flight_id}` : "–"} />
             <Stat label="Optimum" value={money(o?.optimal_total ?? cov?.optimum.total)}
               sub={cov ? `${cov.optimum.origin} · ${cov.optimum.date} · page ${cov.optimum.page}` : undefined} />
             {o?.regret != null && <Stat label="Overpaid" value={money(o.regret)} />}
-            {run.policy !== "scripted" && (
+            {!run.policy.endsWith("scripted") && (
               <Stat label="Tokens" value={(run.input_tokens + run.output_tokens).toLocaleString()}
                 sub={`${run.input_tokens.toLocaleString()} in · ${run.output_tokens.toLocaleString()} out`} />
             )}

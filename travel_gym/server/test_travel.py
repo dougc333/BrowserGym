@@ -117,3 +117,59 @@ def test_hidden_fees_only_on_review():
     assert total not in res
     rev = client.get(f"/e/{ep['id']}/review", params={"flight": f["id"], "travelers": t["passengers"], "bags": t["bags"]}).text
     assert f"Total price {total}" in rev
+
+
+# ------------------------------------------------------------------ MCP channel
+import asyncio  # noqa: E402
+import re  # noqa: E402
+
+import travel_api  # noqa: E402
+
+
+def test_mcp_api_matches_website_order_and_fees():
+    ep = g.generate_episode(12, g.PRESETS["medium"])
+    t = ep["task"]
+    for sort in ("recommended", "price"):
+        for page in (1, 2):
+            api_ids = [f["flight_no"] for f in travel_api.search(ep["id"], t["origins"][0], t["dest"], t["dates"][0],
+                                                                 t["passengers"], page, sort)["flights"]]
+            html = client.get(f"/e/{ep['id']}/results", params={"from": t["origins"][0], "to": t["dest"],
+                                                                "date": t["dates"][0], "travelers": t["passengers"],
+                                                                "page": page, "sort": sort}).text
+            assert api_ids == re.findall(r"View details for (\w+)", html)
+    first = travel_api.search(ep["id"], t["origins"][0], t["dest"], t["dates"][0])["flights"][0]
+    assert "bag_fee_per_bag" not in first and "price_note" in first  # hidden fees stay hidden over MCP
+
+
+def test_mcp_api_booking_is_final_and_checked():
+    ep = g.generate_episode(13, g.PRESETS["medium"])
+    t, opt = ep["task"], ep["optimum"]
+    assert travel_api.quote(ep["id"], opt["flight_id"], t["passengers"], t["bags"])["total_price"] == opt["total"]
+    assert travel_api.book(ep["id"], opt["flight_id"], t["passengers"], t["bags"])["status"] == "booked"
+    assert travel_api.book(ep["id"], opt["flight_id"], t["passengers"], t["bags"])["status"] == "already_booked"
+    assert g.check(ep["id"])["success"]
+
+
+def test_mcp_server_end_to_end_with_scripted_agent():
+    from mcp_agent import run_mcp
+
+    ep = g.generate_episode(14, g.PRESETS["medium"])
+    steps = []
+    status = asyncio.run(run_mcp("mcp-scripted", None, ep, 200, steps.append, lambda: False))
+    assert status == "done" and g.check(ep["id"])["success"]
+    assert steps[0].action.startswith("get_trip_request") and steps[-1].action.startswith("book_flight")
+    assert any("/results?" in s.url for s in steps) and any("/review?" in s.url for s in steps)
+
+
+def test_hermes_tool_call_parsing():
+    from mcp_agent import _parse_tool_calls
+
+    text = ('<think>plan</think>Searching now.\n<tool_call>\n{"name": "search_flights", "arguments": '
+            '{"origin": "SFO", "destination": "JFK", "date": "2026-12-05"}}\n</tool_call>\n'
+            '<tool_call>{"name": "list_airports", "arguments": {}}</tool_call>')
+    thought, calls, bad = _parse_tool_calls(text)
+    assert thought == "plan Searching now." or thought.startswith("plan")
+    assert [c["name"] for c in calls] == ["search_flights", "list_airports"] and not bad
+    _, calls, bad = _parse_tool_calls('<tool_call>{"name": "price_quote", "arguments": {flight_id: 1}}</tool_call>')
+    assert not calls and bad
+    assert _parse_tool_calls("All done, booked SC000123.")[1] == []

@@ -21,7 +21,8 @@ export const Difficulty = z.object({
 });
 export type Difficulty = z.infer<typeof Difficulty>;
 
-export const Policy = z.enum(["scripted", "claude", "openai"]);
+export const Policy = z.enum(["scripted", "claude", "openai", "nous", "mcp-scripted", "mcp-claude", "mcp-nous", "mcp-openai"]);
+export const isMcp = (p: Policy) => p.startsWith("mcp-");
 export type Policy = z.infer<typeof Policy>;
 
 export const Config = z.object({
@@ -29,6 +30,10 @@ export const Config = z.object({
   models: z.array(z.string()),
   default_model: z.string(),
   has_api_key: z.boolean(),
+  has_nous_key: z.boolean(),
+  nous_models: z.array(z.string()),
+  nous_default_model: z.string(),
+  nous_base_url: z.string(),
   site_url: z.string(),
   site_up: z.boolean(),
 });

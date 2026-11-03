@@ -30,7 +30,7 @@ from pydantic import BaseModel, Field
 
 from db import SCREENS
 from generator import PRESETS, Difficulty
-from policies import DEFAULT_MODEL, MODELS
+from policies import DEFAULT_MODEL, MODELS, NOUS_BASE_URL, NOUS_DEFAULT_MODEL, NOUS_MODELS
 from runner import RunConfig, Runner, coverage, get_run, get_step, list_runs, list_steps
 from task import SITE_URL
 
@@ -112,7 +112,7 @@ class DifficultyIn(BaseModel):
 class RunIn(BaseModel):
     difficulty: DifficultyIn
     seed: int = Field(0, ge=0)
-    policy: Literal["scripted", "claude", "openai"] = "scripted"
+    policy: Literal["scripted", "claude", "openai", "nous", "mcp-scripted", "mcp-claude", "mcp-nous", "mcp-openai"] = "scripted"
     model: Optional[str] = None
     max_steps: int = Field(150, ge=1, le=1000)
     headless: bool = True
@@ -124,14 +124,18 @@ def config():
         "presets": {k: asdict(v) for k, v in PRESETS.items()},
         "models": MODELS, "default_model": DEFAULT_MODEL,
         "has_api_key": bool(os.environ.get("ANTHROPIC_API_KEY")),
+        "has_nous_key": bool(os.environ.get("NOUS_API_KEY")),
+        "nous_models": NOUS_MODELS, "nous_default_model": NOUS_DEFAULT_MODEL, "nous_base_url": NOUS_BASE_URL,
         "site_url": SITE_URL, "site_up": site_up(),
     }
 
 
 @app.post("/api/runs")
 def create_run(body: RunIn):
-    if body.policy == "claude" and not os.environ.get("ANTHROPIC_API_KEY"):
+    if body.policy in ("claude", "mcp-claude") and not os.environ.get("ANTHROPIC_API_KEY"):
         raise HTTPException(400, "ANTHROPIC_API_KEY is not set on the server.")
+    if body.policy in ("nous", "mcp-nous") and not os.environ.get("NOUS_API_KEY"):
+        raise HTTPException(400, "NOUS_API_KEY is not set on the server.")
     cfg = RunConfig(difficulty=body.difficulty.model_dump(), seed=body.seed, policy=body.policy,
                     model=body.model, max_steps=body.max_steps, headless=body.headless)
     Difficulty(**cfg.difficulty)  # validates field names
