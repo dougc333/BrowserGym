@@ -1,4 +1,5 @@
 import argparse
+import time
 
 # locally defined agent
 from agent import DemoAgentArgs
@@ -31,6 +32,24 @@ def parse_args():
         type=str,
         default="openended",
         help="Name of the Browsergym task to run. If 'openended', you need to specify a 'start_url'",
+    )
+    parser.add_argument(
+        "--all_miniwob",
+        type=str2bool,
+        default=False,
+        help="Run every registered MiniWoB task once.",
+    )
+    parser.add_argument(
+        "--delay_between_tasks",
+        type=float,
+        default=2.0,
+        help="Seconds to wait between tasks when --all_miniwob is enabled.",
+    )
+    parser.add_argument(
+        "--max_steps",
+        type=int,
+        default=None,
+        help="Maximum agent steps per task (default: 10 for all MiniWoB, 100 otherwise).",
     )
     parser.add_argument(
         "--start_url",
@@ -66,17 +85,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
-    print(
-        """\
---- WARNING ---
-This is a basic agent for demo purposes.
-Visit AgentLab for more capable agents with advanced features.
-https://github.com/ServiceNow/AgentLab"""
-    )
-
-    args = parse_args()
-
+def run_task(args, task_name):
     # setting up agent config
     agent_args = DemoAgentArgs(
         model_name=args.model_name,
@@ -89,15 +98,15 @@ https://github.com/ServiceNow/AgentLab"""
 
     # setting up environment config
     env_args = EnvArgs(
-        task_name=args.task_name,
+        task_name=task_name,
         task_seed=None,
-        max_steps=100,
+        max_steps=args.max_steps if args.max_steps is not None else (10 if args.all_miniwob else 100),
         headless=False,  # keep the browser open
         # viewport={"width": 1500, "height": 1280},  # can be played with if needed
     )
 
     # for openended task, set environment and agent to interactive chat mode on a start url
-    if args.task_name == "openended":
+    if task_name == "openended":
         agent_args.chat_mode = True
         env_args.wait_for_user_message = True
         env_args.task_kwargs = {"start_url": args.start_url}
@@ -118,6 +127,48 @@ https://github.com/ServiceNow/AgentLab"""
 
     for key, val in exp_record.items():
         print(f"{key}: {val}")
+
+    return exp_record
+
+
+def main():
+    print(
+        """\
+--- WARNING ---
+This is a basic agent for demo purposes.
+Visit AgentLab for more capable agents with advanced features.
+https://github.com/ServiceNow/AgentLab"""
+    )
+
+    args = parse_args()
+
+    if not args.all_miniwob:
+        run_task(args, args.task_name)
+        return
+
+    from browsergym.miniwob import ALL_MINIWOB_TASKS
+
+    task_names = [task.get_task_id() for task in ALL_MINIWOB_TASKS]
+    results = []
+    for index, task_name in enumerate(task_names, start=1):
+        print(f"\n=== MiniWoB task {index}/{len(task_names)}: {task_name} ===")
+        try:
+            record = run_task(args, task_name)
+            results.append((task_name, record.get("cum_reward"), None))
+        except Exception as exc:
+            print(f"Task failed: {task_name}: {exc}")
+            results.append((task_name, None, str(exc)))
+
+        if index < len(task_names):
+            print(f"Waiting {args.delay_between_tasks:g}s before the next task...")
+            time.sleep(args.delay_between_tasks)
+
+    succeeded = sum(error is None for _, _, error in results)
+    rewarded = sum(reward == 1 for _, reward, error in results if error is None)
+    print(
+        f"\nCompleted {len(results)} tasks: {succeeded} ran without errors, "
+        f"{rewarded} received full reward."
+    )
 
 
 if __name__ == "__main__":
