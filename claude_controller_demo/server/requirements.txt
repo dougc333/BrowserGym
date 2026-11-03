@@ -1,0 +1,5 @@
+# BrowserGym itself is installed from this repo (see the Makefile `install` target):
+#   pip install -e ../browsergym/core -e ../browsergym/miniwob
+fastapi>=0.115
+uvicorn[standard]>=0.30
+anthropic>=0.40
