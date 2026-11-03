@@ -1,5 +1,5 @@
 import { isBusy, useLab } from "../store/lab";
-import type { PolicyName } from "../lib/schemas";
+import type { PolicyName } from "../shared/schemas";
 import { Badge, Button, Field, Toggle, cx, inputCls } from "./ui";
 
 const PHASE_LABEL: Record<string, [string, string]> = {

@@ -30,27 +30,53 @@ condition and task. Past episodes are stored with **element descriptions**
 
 ## Run it
 
-From the BrowserGym repo root, with BrowserGym core and MiniWoB installed (see
-`claude_controller_demo/README.md`, or `make install && make setup-miniwob`):
+One-time setup, in its own environment (Python 3.10–3.12; BrowserGym pins Playwright 1.44):
 
 ```sh
-cd memory_agent
-pip install anthropic                          # only for Claude
-export MINIWOB_URL="file://$(cd .. && pwd)/miniwob-plusplus/miniwob/html/miniwob/"
+cd ~/BrowserGym
+uv venv .venv --python 3.12
+source .venv/bin/activate
+uv pip install -e browsergym/core -e browsergym/miniwob anthropic
+playwright install chromium
+```
 
-# 1. plumbing check, no model or API key (numbers are meaningless)
+Each session (the MiniWoB files are in `miniwob-plusplus/`; `make setup-miniwob` clones them):
+
+```sh
+cd ~/BrowserGym/memory_agent
+source ../.venv/bin/activate
+export MINIWOB_URL="file://$HOME/BrowserGym/miniwob-plusplus/miniwob/html/miniwob/"
+```
+
+Plumbing check with no model or API key (its numbers are meaningless):
+
+```sh
 python run.py --exp smoke --llm scripted --tasks quick --train 2 --test 2
+```
 
-# 2. Claude
-export ANTHROPIC_API_KEY=...
+With Claude (put your real key in place of `sk-ant-...`):
+
+```sh
+export ANTHROPIC_API_KEY=sk-ant-...
+python run.py --exp haiku-quick --llm anthropic:claude-haiku-5-5 --tasks quick --train 3 --test 5 --workers 4
 python run.py --exp haiku --llm anthropic:claude-haiku-5-5 --tasks memory12 --workers 4
+```
 
-# 3. or a local model through Ollama or vLLM (OpenAI-compatible endpoint)
+Or with a local model through Ollama or vLLM (any OpenAI-compatible endpoint):
+
+```sh
 ollama pull qwen2.5:7b-instruct
 python run.py --exp qwen7b --llm "openai:qwen2.5:7b-instruct@http://localhost:11434/v1" --workers 2
-
-python report.py results/haiku                 # → report.md, report.html, summary.json
 ```
+
+Then build the report (writes `report.md`, `report.html` and `summary.json`):
+
+```sh
+python report.py results/haiku
+```
+
+`run.py` checks the setup before starting (packages, `MINIWOB_URL`, API key) and stops
+with the fix if something is missing.
 
 Runs are resumable: re-run the same command and finished episodes are skipped.
 

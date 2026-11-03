@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useLab, useViewedStep } from "../store/lab";
-import { actionBid } from "../lib/bc";
+import { actionBid } from "../shared/bc";
 import { Panel, cx } from "./ui";
 
 type View = "axtree" | "screenshot" | "prompt" | "response";

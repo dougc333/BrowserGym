@@ -19,7 +19,13 @@ import re
 import time
 from dataclasses import dataclass, field
 
-from browsergym.core.action.highlevel import HighLevelActionSet
+try:
+    from browsergym.core.action.highlevel import HighLevelActionSet
+except ImportError as e:  # give a fix instead of a bare traceback
+    raise SystemExit(
+        f"{e}. Install BrowserGym into this Python: "
+        "pip install -e ../browsergym/core -e ../browsergym/miniwob && playwright install chromium"
+    ) from e
 from browsergym.utils.obs import flatten_axtree_to_str
 
 from llm import Usage

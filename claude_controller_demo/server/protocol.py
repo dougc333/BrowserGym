@@ -2,7 +2,7 @@
 Wire protocol between the browser front end and this server.
 
 Every message is a JSON object with a `type` field. The front end validates
-everything it receives with Zod (web/src/lib/schemas.ts); this file is the
+everything it receives with Zod (web/src/shared/schemas.ts); this file is the
 Python mirror, validated with Pydantic. Keep the two in sync.
 
 Vocabulary (RL terms in brackets):

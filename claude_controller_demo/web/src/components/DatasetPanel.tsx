@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLab } from "../store/lab";
-import { downloadJsonl, toRows, type BcFilters } from "../lib/bc";
-import type { BcFormat, Episode } from "../lib/schemas";
+import { downloadJsonl, toRows, type BcFilters } from "../shared/bc";
+import type { BcFormat, Episode } from "../shared/schemas";
 import { Badge, Button, Field, Panel, Toggle, cx, inputCls, sourceColor } from "./ui";
 
 const FORMATS: { id: BcFormat; label: string; blurb: string }[] = [

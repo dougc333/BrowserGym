@@ -144,6 +144,34 @@ def job(args: dict) -> dict:
     return {"condition": cond, "task": task, "ok": True, "episodes": n_new}
 
 
+def preflight(llm_spec: str) -> None:
+    """Fail fast, with a fix, before spawning dozens of browser jobs."""
+    problems = []
+    try:
+        import browsergym.core  # noqa: F401
+        import browsergym.miniwob  # noqa: F401
+    except ImportError as e:
+        problems.append(
+            f"{e}. Install BrowserGym into THIS Python ({sys.executable}):\n"
+            "      pip install -e ../browsergym/core -e ../browsergym/miniwob && playwright install chromium"
+        )
+    url = os.environ.get("MINIWOB_URL", "")
+    if not url:
+        problems.append("MINIWOB_URL is not set (see ../browsergym/miniwob/README.md or `make setup-miniwob`).")
+    elif url.startswith("file://") and not Path(url[len("file://"):], "click-test.html").exists():
+        problems.append(f"MINIWOB_URL points to {url!r}, but click-test.html is not there.")
+    if llm_spec.startswith("anthropic:"):
+        key = os.environ.get("ANTHROPIC_API_KEY", "")
+        if not key.startswith("sk-ant-"):
+            problems.append("ANTHROPIC_API_KEY is missing or not a real key (it should start with 'sk-ant-').")
+        try:
+            import anthropic  # noqa: F401
+        except ImportError:
+            problems.append("The anthropic package is missing: pip install anthropic")
+    if problems:
+        sys.exit("Cannot start:\n  - " + "\n  - ".join(problems))
+
+
 def main() -> None:
     from agent import CONDITIONS
 
@@ -162,9 +190,8 @@ def main() -> None:
     ap.add_argument("--results-dir", default=str(HERE / "results"))
     args = ap.parse_args()
 
-    miniwob_url = os.environ.get("MINIWOB_URL")
-    if not miniwob_url:
-        sys.exit("Set MINIWOB_URL (see ../browsergym/miniwob/README.md or `make setup-miniwob`).")
+    preflight(args.llm)
+    miniwob_url = os.environ["MINIWOB_URL"]
     tasks = TASK_PRESETS.get(args.tasks) or [t.strip() for t in args.tasks.split(",") if t.strip()]
     conditions = [c.strip() for c in args.conditions.split(",")]
     for c in conditions:

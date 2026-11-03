@@ -1,5 +1,5 @@
 import { useLab, useViewedSteps } from "../store/lab";
-import { returnsToGo } from "../lib/bc";
+import { returnsToGo } from "../shared/bc";
 import { Badge, Button, Panel, cx, sourceColor } from "./ui";
 
 export function Timeline({ className }: { className?: string }) {

@@ -73,14 +73,14 @@ Filters: successful episodes only (filtered BC), drop steps whose action raised 
 
 ```
 server/
-  protocol.py     Pydantic models for the wire protocol and records (mirror of web/src/lib/schemas.ts)
+  protocol.py     Pydantic models for the wire protocol and records (mirror of web/src/shared/schemas.ts)
   env_worker.py   BrowserGym on one dedicated thread; AXTree flattening; the HighLevelActionSet
   policies.py     ClaudePolicy (streaming Messages API + action parsing), RandomPolicy, prompt builder
   app.py          FastAPI: WebSocket session state machine (reset/think/act/run/batch), REST for episodes
 web/src/
-  lib/schemas.ts  Zod: server events, client commands, settings, dataset rows
-  lib/socket.ts   WebSocket client, Zod-validated in both directions
-  lib/bc.ts       episodes → dataset rows, return-to-go
+  shared/schemas.ts  Zod: server events, client commands, settings, dataset rows
+  shared/socket.ts   WebSocket client, Zod-validated in both directions
+  shared/bc.ts       episodes → dataset rows, return-to-go
   store/lab.ts    the single Zustand store; components select slices, nothing is prop-drilled
   components/     LoopDiagram, ObservationPanel, PolicyPanel, Timeline, BenchmarkPanel, DatasetPanel, LearnPanel
 ```

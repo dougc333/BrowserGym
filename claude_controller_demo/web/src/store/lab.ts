@@ -6,12 +6,12 @@
  * loop diagram, the AXTree panel and the timeline all read the same store.
  *
  * Every write goes through Zod first:
- *   - server events are validated in lib/socket.ts before `applyEvent` runs
+ *   - server events are validated in shared/socket.ts before `applyEvent` runs
  *   - settings changes are validated by `Settings.safeParse` in `updateSettings`
- *   - outgoing commands are validated by `ClientCommand` in lib/socket.ts
+ *   - outgoing commands are validated by `ClientCommand` in shared/socket.ts
  */
 import { create } from "zustand";
-import * as socket from "../lib/socket";
+import * as socket from "../shared/socket";
 import {
   Episode,
   EpisodeSummary,
@@ -24,7 +24,7 @@ import {
   type Proposal,
   type ServerEvent,
   type Step,
-} from "../lib/schemas";
+} from "../shared/schemas";
 
 export type Tab = "live" | "bench" | "data" | "learn";
 type LogLine = { id: number; level: "info" | "error"; message: string; ts: number };
