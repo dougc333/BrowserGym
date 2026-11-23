@@ -32,7 +32,7 @@ from pydantic import ValidationError
 import env_worker
 import policies
 from env_worker import EnvWorker
-from policies import ClaudePolicy, HistoryItem, PolicyContext, RandomPolicy, build_prompt
+from policies import ClaudePolicy, HistoryItem, NousPolicy, PolicyContext, RandomPolicy, build_prompt
 from protocol import (
     ActCmd,
     BatchCmd,
@@ -64,8 +64,12 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 def get_config() -> dict[str, Any]:
     return {
         "has_api_key": policies.has_api_key(),
+        "has_nous_key": policies.has_nous_key(),
         "default_model": policies.DEFAULT_MODEL,
         "models": policies.AVAILABLE_MODELS,
+        "nous_default_model": policies.NOUS_DEFAULT_MODEL,
+        "nous_models": policies.NOUS_MODELS,
+        "nous_base_url": policies.NOUS_BASE_URL,
         "benchmarks": env_worker.INSTALLED_BENCHMARKS,
         "action_space": env_worker.ACTION_SET.describe(
             with_long_description=False, with_examples=True
@@ -118,6 +122,7 @@ class Session:
         self.run_cfg: Optional[RunCmd] = None  # set while autopilot is on
         self.cancel_batch = False
         self._claude: Optional[ClaudePolicy] = None
+        self._nous: Optional[NousPolicy] = None
         self._tasks: set[asyncio.Task] = set()
 
     # ---- plumbing
@@ -158,6 +163,15 @@ class Session:
             if self._claude is None:
                 self._claude = ClaudePolicy()
             return self._claude
+        if name == "nous":
+            if not policies.has_nous_key():
+                raise RuntimeError(
+                    "NOUS_API_KEY is not set on the server. Set it and restart, "
+                    "or use another policy."
+                )
+            if self._nous is None:
+                self._nous = NousPolicy()
+            return self._nous
         raise RuntimeError(f"'{name}' is not an automatic policy; send an act command instead.")
 
     # ---- the RL loop, one phase at a time

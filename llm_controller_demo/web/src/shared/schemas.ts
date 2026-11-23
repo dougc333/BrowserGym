@@ -11,7 +11,7 @@
  */
 import { z } from "zod";
 
-export const PolicyName = z.enum(["claude", "random", "human"]);
+export const PolicyName = z.enum(["claude", "nous", "random", "human"]);
 export type PolicyName = z.infer<typeof PolicyName>;
 
 export const Phase = z.enum([
@@ -100,8 +100,12 @@ export type Episode = z.infer<typeof Episode>;
 
 export const Config = z.object({
   has_api_key: z.boolean(),
+  has_nous_key: z.boolean(),
   default_model: z.string(),
   models: z.array(z.string()),
+  nous_default_model: z.string(),
+  nous_models: z.array(z.string()),
+  nous_base_url: z.string(),
   benchmarks: z.array(z.string()),
   action_space: z.string(),
   system_prompt: z.string(),

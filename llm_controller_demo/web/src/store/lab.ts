@@ -87,9 +87,11 @@ export const useLab = create<LabState>()((set, get) => {
   };
   const policyArgs = () => {
     const s = get().settings;
+    const config = get().config;
+    const fallbackModel = s.policy === "nous" ? config?.nous_default_model : config?.default_model;
     return {
       policy: s.policy === "human" ? ("claude" as const) : s.policy,
-      model: s.model ?? get().config?.default_model ?? null,
+      model: s.model ?? fallbackModel ?? null,
       temperature: s.temperature,
     };
   };
@@ -230,7 +232,7 @@ export const useLab = create<LabState>()((set, get) => {
 
     run() {
       if (get().settings.policy === "human") {
-        get().notify("info", "Autopilot needs an automatic policy (Claude or random).");
+        get().notify("info", "Autopilot needs an automatic policy (Claude, Nous, or random).");
         return;
       }
       if (send({ type: "run", supervised: get().settings.supervised, ...policyArgs() }))

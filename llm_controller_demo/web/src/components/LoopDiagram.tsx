@@ -46,6 +46,8 @@ export function LoopDiagram() {
     policy:
       settings.policy === "claude"
         ? (settings.model ?? config?.default_model ?? "Claude")
+        : settings.policy === "nous"
+          ? (settings.model ?? config?.nous_default_model ?? "Nous")
         : settings.policy === "random"
           ? "random baseline"
           : "you (human)",
@@ -135,7 +137,7 @@ export function LoopDiagram() {
       </svg>
       <p className="px-3 pb-3 text-xs leading-relaxed text-ink-500">
         {phase === "awaiting_approval"
-          ? "Claude has proposed aₜ. Approve it, or edit it to inject a human correction before it reaches the environment."
+          ? "The LLM has proposed aₜ. Approve it, or edit it to inject a human correction before it reaches the environment."
           : phase === "thinking"
             ? "The AXTree text is the state the LLM conditions on. Its reply is decoded into a single action string."
             : phase === "done"

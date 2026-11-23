@@ -102,4 +102,4 @@ export function Toggle({ checked, onChange, label, hint }: { checked: boolean; o
 }
 
 export const sourceColor = (s: string) =>
-  s === "claude" ? "var(--color-policy)" : s === "human" ? "var(--color-act)" : "var(--color-ink-300)";
+  s === "claude" || s === "nous" ? "var(--color-policy)" : s === "human" ? "var(--color-act)" : "var(--color-ink-300)";

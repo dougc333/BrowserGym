@@ -16,6 +16,11 @@ const STARTER = [
   "navigate-tree",
 ].map((t) => `browsergym/miniwob.${t}`);
 
+// A fast, diverse default: exactly four (task, seed) episodes.
+const SMOKE = ["click-button", "click-link", "enter-text", "choose-list"].map(
+  (t) => `browsergym/miniwob.${t}`,
+);
+
 export function BenchmarkPanel() {
   const tasks = useLab((s) => s.tasks);
   const batch = useLab((s) => s.batch);
@@ -25,10 +30,10 @@ export function BenchmarkPanel() {
 
   const benches = Object.keys(tasks);
   const [bench, setBench] = useState("miniwob");
-  const [picked, setPicked] = useState<Set<string>>(new Set(STARTER.slice(0, 4)));
+  const [picked, setPicked] = useState<Set<string>>(new Set(SMOKE));
   const [filter, setFilter] = useState("");
   const [seedStart, setSeedStart] = useState(0);
-  const [nSeeds, setNSeeds] = useState(3);
+  const [nSeeds, setNSeeds] = useState(1);
 
   const list = (tasks[bench] ?? []).filter((t) => t.includes(filter));
   const toggle = (t: string) =>
@@ -66,8 +71,11 @@ export function BenchmarkPanel() {
           <input className={cx(inputCls, "flex-1")} placeholder="filter…" value={filter} onChange={(e) => setFilter(e.target.value)} />
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
+          <Button className="!py-1 text-xs" onClick={() => { setPicked(new Set(SMOKE.filter((t) => tasks[bench]?.includes(t)))); setNSeeds(1); }}>
+            4-case smoke set
+          </Button>
           <Button className="!py-1 text-xs" onClick={() => setPicked(new Set(STARTER.filter((t) => tasks[bench]?.includes(t))))}>
-            MiniWoB starter set
+            10-task starter set
           </Button>
           <Button className="!py-1 text-xs" onClick={() => setPicked(new Set())}>
             clear

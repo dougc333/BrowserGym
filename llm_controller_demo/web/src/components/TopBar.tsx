@@ -19,7 +19,7 @@ export function TopBar() {
       <div className="flex items-baseline gap-2">
         <span className="font-mono text-sm font-bold text-policy">π</span>
         <h1 className="text-sm font-semibold tracking-tight">
-          Claude as RL Controller <span className="text-ink-500">· BrowserGym</span>
+          LLM as RL Controller <span className="text-ink-500">· BrowserGym</span>
         </h1>
       </div>
       <nav className="flex gap-1">
@@ -41,7 +41,11 @@ export function TopBar() {
         <Status ok={connection === "open"} label={`bridge ${connection}`} />
         <Status
           ok={!!config?.has_api_key}
-          label={config ? (config.has_api_key ? "ANTHROPIC_API_KEY set" : "no API key: random/human only") : "…"}
+          label={config ? (config.has_api_key ? "Anthropic key set" : "Anthropic key missing") : "…"}
+        />
+        <Status
+          ok={!!config?.has_nous_key}
+          label={config ? (config.has_nous_key ? "Nous key set" : "Nous key missing") : "…"}
         />
       </div>
     </header>

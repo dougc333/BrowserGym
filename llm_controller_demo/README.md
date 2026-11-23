@@ -22,11 +22,12 @@ An interactive, educational demo of an LLM acting as the **policy** in a reinfor
 Requires Python 3.10–3.12 (BrowserGym pins Playwright 1.44) and Node 20+.
 
 ```sh
-cd claude_controller_demo
+cd llm_controller_demo
 python -m venv .venv && source .venv/bin/activate
 make install                    # BrowserGym core+miniwob, bridge deps, Chromium, npm packages
 make miniwob                    # clones MiniWoB++ to ../miniwob-plusplus
 export ANTHROPIC_API_KEY=sk-ant-...   # optional: without it, use the Random / Human policies
+export NOUS_API_KEY=...               # optional: enables Nous Research Hermes models
 make dev                        # bridge on :8000, UI on http://localhost:5173
 ```
 
@@ -38,6 +39,10 @@ Environment variables:
 |---|---|---|
 | `ANTHROPIC_API_KEY` | none | Enables the Claude policy |
 | `CLAUDE_MODEL` | `claude-sonnet-5-5` | Default model (the UI can switch between Haiku, Sonnet, Opus) |
+| `NOUS_API_KEY` | none | Enables the Nous policy through the Nous Portal API |
+| `NOUS_MODEL` | `Hermes-4-70B` | Default Nous model |
+| `NOUS_BASE_URL` | `https://inference-api.nousresearch.com/v1` | Nous OpenAI-compatible endpoint |
+| `NOUS_TIMEOUT_SECONDS` | `120` | Per-request Nous timeout |
 | `MINIWOB_URL` | set by the Makefile | `file://…/miniwob-plusplus/miniwob/html/miniwob/` |
 | `CHROMIUM_EXECUTABLE` | Playwright's Chromium | Point at a different Chromium build |
 
