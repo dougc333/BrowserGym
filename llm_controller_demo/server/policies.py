@@ -45,6 +45,9 @@ NOUS_MODELS = list(
             "deepseek/deepseek-v4-flash-vision-exp",
             "tencent/hy4-flash:free",
             "qwen/qwen3.7-flash",
+            "meta/muse-spark-1.3",
+            "meta/muse-spark-open",
+            "thinkingmachines/inkling",
         ]
     )
 )
@@ -220,7 +223,12 @@ class ClaudePolicy:
         )
 
 
-_NOUS_VISION_MODELS = {"tencent/hy4-flash:free", "qwen/qwen3.7-flash"}  # accept images per Nous /models
+_NOUS_VISION_MODELS = {
+    "qwen/qwen3.7-flash",
+    "meta/muse-spark-1.3",
+    "meta/muse-spark-open",
+    "thinkingmachines/inkling",
+}  # accept images per Nous /models
 
 
 def _nous_is_vision(model: str) -> bool:
