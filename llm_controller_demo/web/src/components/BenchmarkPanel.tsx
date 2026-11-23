@@ -3,23 +3,7 @@ import { useLab } from "../store/lab";
 import { PolicyPicker } from "./EpisodeControls";
 import { Badge, Button, Field, Panel, cx, inputCls } from "./ui";
 
-const STARTER = [
-  "click-test",
-  "click-button",
-  "click-link",
-  "click-checkboxes",
-  "focus-text",
-  "enter-text",
-  "login-user",
-  "choose-list",
-  "click-tab",
-  "navigate-tree",
-].map((t) => `browsergym/miniwob.${t}`);
-
-// A fast, diverse default: exactly four (task, seed) episodes.
-const SMOKE = ["click-button", "click-link", "enter-text", "choose-list"].map(
-  (t) => `browsergym/miniwob.${t}`,
-);
+const SMOKE_TASK = "browsergym/miniwob.click-button";
 
 export function BenchmarkPanel() {
   const tasks = useLab((s) => s.tasks);
@@ -30,7 +14,7 @@ export function BenchmarkPanel() {
 
   const benches = Object.keys(tasks);
   const [bench, setBench] = useState("miniwob");
-  const [picked, setPicked] = useState<Set<string>>(new Set(SMOKE));
+  const [picked, setPicked] = useState<Set<string>>(new Set([SMOKE_TASK]));
   const [filter, setFilter] = useState("");
   const [seedStart, setSeedStart] = useState(0);
   const [nSeeds, setNSeeds] = useState(1);
@@ -71,11 +55,11 @@ export function BenchmarkPanel() {
           <input className={cx(inputCls, "flex-1")} placeholder="filter…" value={filter} onChange={(e) => setFilter(e.target.value)} />
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
-          <Button className="!py-1 text-xs" onClick={() => { setPicked(new Set(SMOKE.filter((t) => tasks[bench]?.includes(t)))); setNSeeds(1); }}>
-            4-case smoke set
+          <Button className="!py-1 text-xs" onClick={() => { setPicked(tasks[bench]?.includes(SMOKE_TASK) ? new Set([SMOKE_TASK]) : new Set()); setNSeeds(1); }}>
+            1-task smoke run
           </Button>
-          <Button className="!py-1 text-xs" onClick={() => setPicked(new Set(STARTER.filter((t) => tasks[bench]?.includes(t))))}>
-            10-task starter set
+          <Button className="!py-1 text-xs" onClick={() => setPicked(new Set(list))}>
+            select all shown
           </Button>
           <Button className="!py-1 text-xs" onClick={() => setPicked(new Set())}>
             clear
@@ -101,11 +85,12 @@ export function BenchmarkPanel() {
         <Panel title="2 · Configure the rollout" accent="var(--color-policy)" bodyClass="p-3">
           <div className="flex flex-wrap items-end gap-4">
             <PolicyPicker allowHuman={false} />
-            <Field label="Seeds">
+            <Field label="Seeds (first × count)">
               <div className="flex items-center gap-1 text-xs text-ink-500">
-                <input className={cx(inputCls, "w-16")} type="number" min={0} value={seedStart} onChange={(e) => setSeedStart(Number(e.target.value))} />
+                <input title="First seed" className={cx(inputCls, "w-16")} type="number" min={0} value={seedStart} onChange={(e) => setSeedStart(Number(e.target.value))} />
                 <span>×</span>
-                <input className={cx(inputCls, "w-14")} type="number" min={1} max={50} value={nSeeds} onChange={(e) => setNSeeds(Math.max(1, Number(e.target.value)))} />
+                <input title="Number of seeds per task" className={cx(inputCls, "w-14")} type="number" min={1} max={50} value={nSeeds} onChange={(e) => setNSeeds(Math.min(50, Math.max(1, Number(e.target.value) || 1)))} />
+                <span>= seeds {seedStart}–{seedStart + nSeeds - 1}</span>
               </div>
             </Field>
             <Field label="Max steps">
