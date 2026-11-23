@@ -6,7 +6,7 @@
  * Here the "expert" is Claude (or a human correcting Claude), and every row
  * we emit is one (o_t, a_t) pair taken straight from a recorded episode.
  */
-import type { BcFormat, Episode, Step } from "./schemas";
+import type { BcFormat, ChatContent, Episode, Prompt, Step } from "./schemas";
 import { ObsActionRow, PreferenceRow, SftChatRow } from "./schemas";
 
 export type BcFilters = {
@@ -33,6 +33,16 @@ export function assistantTarget(step: Step): string {
     : `<action>${step.action}</action>`;
 }
 
+/** The user turn: plain text, or [image, text] when the policy was given a screenshot. */
+export function userContent(prompt: Prompt): ChatContent {
+  return prompt.image
+    ? [
+        { type: "image_url", image_url: { url: prompt.image } },
+        { type: "text", text: prompt.user },
+      ]
+    : prompt.user;
+}
+
 function keepStep(step: Step, f: BcFilters) {
   if (f.dropErrors && step.action_error) return false;
   if (!f.includeHuman && step.action_source === "human") return false;
@@ -54,7 +64,7 @@ export function toRows(episodes: Episode[], format: BcFormat, f: BcFilters, gamm
           PreferenceRow.parse({
             prompt: [
               { role: "system", content: prompt.system },
-              { role: "user", content: prompt.user },
+              { role: "user", content: userContent(prompt) },
             ],
             chosen: assistantTarget(step),
             rejected: `<thinking>${p.thought}</thinking>\n<action>${p.action}</action>`,
@@ -70,7 +80,7 @@ export function toRows(episodes: Episode[], format: BcFormat, f: BcFilters, gamm
           SftChatRow.parse({
             messages: [
               { role: "system", content: prompt.system },
-              { role: "user", content: prompt.user },
+              { role: "user", content: userContent(prompt) },
               { role: "assistant", content: assistantTarget(step) },
             ],
             metadata: {

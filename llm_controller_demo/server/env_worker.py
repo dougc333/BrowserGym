@@ -51,7 +51,7 @@ for _mod in BENCHMARK_MODULES:
 # by the [bid] shown in the AXTree, which is why AXTree observations pair so
 # well with an LLM: the model can name exactly what it wants to touch.
 ACTION_SET = HighLevelActionSet(
-    subsets=["chat", "tab", "nav", "bid", "infeas"],
+    subsets=["chat", "tab", "nav", "bid", "coord", "infeas"],
     strict=False,
     multiaction=False,
     demo_mode="off",

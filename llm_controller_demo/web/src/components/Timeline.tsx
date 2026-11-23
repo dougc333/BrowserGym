@@ -14,6 +14,19 @@ export function Timeline({ className }: { className?: string }) {
   const episode = replay ?? live;
   const rtg = returnsToGo(steps, gamma);
   const ended = replay ? true : phase === "done";
+  const tokIn = steps.reduce((a, s) => a + (s.proposal?.usage.input_tokens ?? 0), 0);
+  const tokOut = steps.reduce((a, s) => a + (s.proposal?.usage.output_tokens ?? 0), 0);
+  const fmt = (n: number) => n.toLocaleString();
+  const prices = useLab((s) => s.config?.nous_prices);
+  // Cost = tokens x the model's list price. Cached-prompt discounts are not applied, so this is an upper bound.
+  const stepCost = (st: (typeof steps)[number]) => {
+    const price = st.proposal?.model ? prices?.[st.proposal.model] : undefined;
+    return price && st.proposal
+      ? st.proposal.usage.input_tokens * price.prompt + st.proposal.usage.output_tokens * price.completion
+      : 0;
+  };
+  const cost = steps.reduce((a, st) => a + stepCost(st), 0);
+  const fmtCost = (c: number) => (c < 0.01 ? `$${c.toFixed(5)}` : `$${c.toFixed(3)}`);
 
   return (
     <Panel
@@ -38,6 +51,12 @@ export function Timeline({ className }: { className?: string }) {
             <Badge>seed {episode.seed}</Badge>
             <Badge>{steps.length} steps</Badge>
             <Badge color="var(--color-reward)">G₀ = {(rtg[0] ?? 0).toFixed(3)}</Badge>
+            {tokIn + tokOut > 0 && (
+              <Badge>
+                {fmt(tokIn)}→{fmt(tokOut)} tok
+              </Badge>
+            )}
+            {cost > 0 && <Badge>{fmtCost(cost)}</Badge>}
             {ended && (
               <Badge color={episode.success ? "var(--color-reward)" : "var(--color-act)"}>
                 {episode.success ? "success" : "failure"}
@@ -69,6 +88,12 @@ export function Timeline({ className }: { className?: string }) {
               <div className="mt-0.5 flex items-center gap-2 pl-8 font-mono text-[10px]">
                 <span className={s.reward > 0 ? "text-reward" : "text-ink-500"}>r={s.reward}</span>
                 <span className="text-ink-500">G={rtg[i].toFixed(3)}</span>
+                {s.proposal && (
+                  <span className="text-ink-500">
+                    {s.proposal.usage.input_tokens}→{s.proposal.usage.output_tokens} tok
+                    {stepCost(s) > 0 && ` · ${fmtCost(stepCost(s))}`}
+                  </span>
+                )}
                 {s.proposal && s.proposal.action !== s.action && <span className="text-act">corrected</span>}
                 {s.action_error && <span className="text-act">error</span>}
                 {(s.terminated || s.truncated) && <span className="text-ink-300">{s.terminated ? "terminal" : "truncated"}</span>}

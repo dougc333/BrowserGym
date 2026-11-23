@@ -16,6 +16,8 @@ Policies: functions from an observation (plus history) to an action.
 from __future__ import annotations
 
 import asyncio
+import base64
+import io
 import json
 import os
 import random
@@ -23,8 +25,10 @@ import re
 import time
 import urllib.error
 import urllib.request
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Awaitable, Callable, Optional
+
+from PIL import Image, ImageDraw
 
 from env_worker import ACTION_SET
 from protocol import Observation, Prompt, Proposal, Usage
@@ -32,8 +36,17 @@ from protocol import Observation, Prompt, Proposal, Usage
 DEFAULT_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-5-5")
 AVAILABLE_MODELS = ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"]
 NOUS_BASE_URL = os.environ.get("NOUS_BASE_URL", "https://inference-api.nousresearch.com/v1")
-NOUS_DEFAULT_MODEL = os.environ.get("NOUS_MODEL", "Hermes-4-70B")
-NOUS_MODELS = ["Hermes-4-70B", "Hermes-4-405B"]
+NOUS_DEFAULT_MODEL = os.environ.get("NOUS_MODEL", "deepseek/deepseek-v4.1-flash")
+NOUS_MODELS = list(
+    dict.fromkeys(
+        [
+            NOUS_DEFAULT_MODEL,
+            "deepseek/deepseek-v4.1-flash",
+            "deepseek/deepseek-v4-flash-vision-exp",
+        ]
+    )
+)
+NOUS_REASONING_EFFORT = os.environ.get("NOUS_REASONING_EFFORT", "low")  # max|xhigh|high|low; "" = provider default
 NOUS_TIMEOUT_SECONDS = float(os.environ.get("NOUS_TIMEOUT_SECONDS", "120"))
 
 SYSTEM_PROMPT = """\
@@ -72,6 +85,33 @@ class PolicyContext:
 Emit = Callable[[str], Awaitable[None]]  # streams text deltas to the UI
 
 
+def annotate_screenshot(data_url: str, step: int = 50) -> tuple[str, str]:
+    """Overlay a labelled pixel grid so a vision model can read off exact coordinates.
+
+    Returns (annotated data URL, a one-line note describing the image's coordinate system).
+    Pixel (0, 0) is the top-left of the page and matches what mouse_* actions expect.
+    """
+    im = Image.open(io.BytesIO(base64.b64decode(data_url.split(",", 1)[1]))).convert("RGB")
+    w, h = im.size
+    overlay = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    d = ImageDraw.Draw(overlay)
+    for x in range(0, w, step):
+        d.line([(x, 0), (x, h)], fill=(255, 0, 0, 90))
+        d.text((x + 2, 1), str(x), fill=(255, 0, 0, 255))
+    for y in range(step, h, step):
+        d.line([(0, y), (w, y)], fill=(255, 0, 0, 90))
+        d.text((2, y + 1), str(y), fill=(255, 0, 0, 255))
+    im = Image.alpha_composite(im.convert("RGBA"), overlay).convert("RGB")
+    buf = io.BytesIO()
+    im.save(buf, format="JPEG", quality=85)
+    note = (
+        f"The attached screenshot is {w}x{h} pixels. Red grid lines every {step}px are labelled "
+        "with their pixel coordinates (x along the top, y down the left). Coordinates in "
+        "mouse_* actions are in these same pixels; read positions off the grid, do not guess."
+    )
+    return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode(), note
+
+
 def build_prompt(ctx: PolicyContext) -> Prompt:
     o = ctx.obs
     parts = [
@@ -91,8 +131,14 @@ def build_prompt(ctx: PolicyContext) -> Prompt:
         parts.append("# Actions taken so far\n" + "\n".join(lines))
     if o.last_action_error:
         parts.append(f"# Error from the last action\n{o.last_action_error}")
+    image = None
+    if ctx.use_screenshot and o.screenshot:
+        # The exact (grid-annotated) image the model sees is stored on the prompt so that
+        # SFT / preference exports can reproduce the multimodal input.
+        image, note = annotate_screenshot(o.screenshot)
+        parts.append("# Screenshot\n" + note)
     parts.append("# Next action\nThink briefly, then give one action.")
-    return Prompt(system=SYSTEM_PROMPT, user="\n\n".join(parts))
+    return Prompt(system=SYSTEM_PROMPT, user="\n\n".join(parts), image=image)
 
 
 def parse_response(text: str) -> tuple[str, str]:
@@ -122,17 +168,21 @@ class ClaudePolicy:
         emit: Emit,
         model: Optional[str] = None,
         temperature: Optional[float] = None,
+        reasoning_effort: Optional[str] = None,  # ignored: Nous-only
     ) -> Proposal:
         model = model or DEFAULT_MODEL
         prompt = build_prompt(ctx)
         content: list[dict] = [{"type": "text", "text": prompt.user}]
-        if ctx.use_screenshot and ctx.obs.screenshot:
-            b64 = ctx.obs.screenshot.split(",", 1)[1]
+        if prompt.image:
             content.insert(
                 0,
                 {
                     "type": "image",
-                    "source": {"type": "base64", "media_type": "image/jpeg", "data": b64},
+                    "source": {
+                        "type": "base64",
+                        "media_type": "image/jpeg",
+                        "data": prompt.image.split(",", 1)[1],
+                    },
                 },
             )
         kwargs: dict = dict(
@@ -168,6 +218,10 @@ class ClaudePolicy:
         )
 
 
+def _nous_is_vision(model: str) -> bool:
+    return "v4.1" in model or "vision" in model
+
+
 class NousPolicy:
     """Nous Portal policy using its OpenAI-compatible chat-completions API."""
 
@@ -199,17 +253,31 @@ class NousPolicy:
         emit: Emit,
         model: Optional[str] = None,
         temperature: Optional[float] = None,
+        reasoning_effort: Optional[str] = None,
     ) -> Proposal:
         model = model or NOUS_DEFAULT_MODEL
+        if ctx.use_screenshot and not _nous_is_vision(model):
+            # Text-only models (e.g. deepseek-v4-pro) reject images with HTTP 400, so run
+            # them without the screenshot (and record the prompt without it).
+            ctx = replace(ctx, use_screenshot=False)
         prompt = build_prompt(ctx)
+        user_content: object = prompt.user
+        if prompt.image:
+            user_content = [
+                {"type": "image_url", "image_url": {"url": prompt.image}},
+                {"type": "text", "text": prompt.user},
+            ]
         body: dict = {
             "model": model,
-            "max_tokens": 1024,
+            "max_tokens": 4096,
             "messages": [
                 {"role": "system", "content": prompt.system},
-                {"role": "user", "content": prompt.user},
+                {"role": "user", "content": user_content},
             ],
         }
+        effort = reasoning_effort or NOUS_REASONING_EFFORT  # UI choice wins over the env default
+        if effort:
+            body["reasoning_effort"] = effort
         if temperature is not None:
             body["temperature"] = temperature
 
@@ -222,7 +290,14 @@ class NousPolicy:
             raise RuntimeError(
                 f"Nous request exceeded {NOUS_TIMEOUT_SECONDS:g} seconds"
             ) from error
-        raw = result["choices"][0]["message"].get("content") or ""
+        choice = result["choices"][0]
+        raw = choice["message"].get("content") or ""
+        if not raw.strip() and choice.get("finish_reason") == "length":
+            # Reasoning ate the whole output budget; don't silently turn that into noop().
+            raise RuntimeError(
+                "Nous model used all max_tokens on reasoning and returned no answer; "
+                "lower NOUS_REASONING_EFFORT or raise max_tokens"
+            )
         await emit(raw)
         thought, action = parse_response(raw)
         usage = result.get("usage") or {}
@@ -271,6 +346,36 @@ class RandomPolicy:
 
 def has_api_key() -> bool:
     return bool(os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"))
+
+
+_PRICE_CACHE: dict = {"at": 0.0, "prices": {}}
+
+
+def nous_prices() -> dict[str, dict[str, float]]:
+    """USD per token for our Nous models, from /v1/models. Cached for an hour."""
+    now = time.time()
+    if _PRICE_CACHE["prices"] and now - _PRICE_CACHE["at"] < 3600:
+        return _PRICE_CACHE["prices"]
+    try:
+        req = urllib.request.Request(
+            f"{NOUS_BASE_URL.rstrip('/')}/models",
+            headers={"Authorization": f"Bearer {os.environ.get('NOUS_API_KEY', '')}"},
+        )
+        with urllib.request.urlopen(req, timeout=5) as r:
+            data = json.loads(r.read())["data"]
+        wanted = set(NOUS_MODELS)
+        prices = {
+            m["id"]: {
+                "prompt": float(m["pricing"]["prompt"]),
+                "completion": float(m["pricing"]["completion"]),
+            }
+            for m in data
+            if m["id"] in wanted and m.get("pricing")
+        }
+    except Exception:
+        return _PRICE_CACHE["prices"]  # stale or empty: the UI just hides the cost
+    _PRICE_CACHE.update(at=now, prices=prices)
+    return prices
 
 
 def has_nous_key() -> bool:

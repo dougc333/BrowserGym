@@ -1,5 +1,5 @@
 import { isBusy, useLab } from "../store/lab";
-import type { PolicyName } from "../shared/schemas";
+import { REASONING_EFFORTS, type PolicyName } from "../shared/schemas";
 import { Badge, Button, Field, Toggle, cx, inputCls } from "./ui";
 
 const PHASE_LABEL: Record<string, [string, string]> = {
@@ -95,6 +95,29 @@ export function PolicyPicker({ allowHuman = true }: { allowHuman?: boolean }) {
               onChange={(e) => update({ temperature: e.target.value === "" ? null : Number(e.target.value) })}
             />
           </Field>
+          {settings.policy === "nous" && (
+            <Field
+              label="Reasoning"
+              hint="How long the model thinks before answering. Lower = faster and cheaper, higher = more careful. Default = the bridge's NOUS_REASONING_EFFORT."
+            >
+              <select
+                className={inputCls}
+                value={settings.reasoningEffort ?? ""}
+                onChange={(e) =>
+                  update({
+                    reasoningEffort: e.target.value === "" ? null : (e.target.value as (typeof REASONING_EFFORTS)[number]),
+                  })
+                }
+              >
+                <option value="">default</option>
+                {REASONING_EFFORTS.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          )}
         </>
       )}
     </div>

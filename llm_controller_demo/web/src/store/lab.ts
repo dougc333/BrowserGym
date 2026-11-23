@@ -93,6 +93,7 @@ export const useLab = create<LabState>()((set, get) => {
       policy: s.policy === "human" ? ("claude" as const) : s.policy,
       model: s.model ?? fallbackModel ?? null,
       temperature: s.temperature,
+      reasoning_effort: s.policy === "nous" ? s.reasoningEffort : null,
     };
   };
 
