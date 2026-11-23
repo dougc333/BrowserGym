@@ -43,6 +43,8 @@ NOUS_MODELS = list(
             NOUS_DEFAULT_MODEL,
             "deepseek/deepseek-v4.1-flash",
             "deepseek/deepseek-v4-flash-vision-exp",
+            "tencent/hy4-flash:free",
+            "qwen/qwen3.7-flash",
         ]
     )
 )
@@ -218,8 +220,11 @@ class ClaudePolicy:
         )
 
 
+_NOUS_VISION_MODELS = {"tencent/hy4-flash:free", "qwen/qwen3.7-flash"}  # accept images per Nous /models
+
+
 def _nous_is_vision(model: str) -> bool:
-    return "v4.1" in model or "vision" in model
+    return model in _NOUS_VISION_MODELS or "v4.1" in model or "vision" in model
 
 
 class NousPolicy:
