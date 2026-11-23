@@ -37,6 +37,7 @@ export function PolicyPicker({ allowHuman = true }: { allowHuman?: boolean }) {
   const config = useLab((s) => s.config);
   const options: { id: PolicyName; label: string; disabled?: boolean }[] = [
     { id: "claude", label: "Claude", disabled: config ? !config.has_api_key : false },
+    { id: "nous", label: "Nous", disabled: config ? !config.has_nous_key : false },
     { id: "random", label: "Random" },
     ...(allowHuman ? [{ id: "human" as const, label: "Human" }] : []),
   ];
@@ -48,8 +49,14 @@ export function PolicyPicker({ allowHuman = true }: { allowHuman?: boolean }) {
             <button
               key={o.id}
               disabled={o.disabled}
-              title={o.disabled ? "Set ANTHROPIC_API_KEY on the server to enable Claude" : undefined}
-              onClick={() => update({ policy: o.id })}
+              title={
+                o.disabled
+                  ? o.id === "nous"
+                    ? "Set NOUS_API_KEY on the server to enable Nous"
+                    : "Set ANTHROPIC_API_KEY on the server to enable Claude"
+                  : undefined
+              }
+              onClick={() => update({ policy: o.id, model: null })}
               className={cx(
                 "px-3 py-1.5 text-sm transition disabled:opacity-30",
                 settings.policy === o.id ? "bg-policy text-ink-950" : "bg-ink-950 text-ink-300 hover:text-ink-100",
@@ -60,15 +67,18 @@ export function PolicyPicker({ allowHuman = true }: { allowHuman?: boolean }) {
           ))}
         </div>
       </Field>
-      {settings.policy === "claude" && config && (
+      {(settings.policy === "claude" || settings.policy === "nous") && config && (
         <>
           <Field label="Model">
             <select
               className={inputCls}
-              value={settings.model ?? config.default_model}
+              value={
+                settings.model ??
+                (settings.policy === "nous" ? config.nous_default_model : config.default_model)
+              }
               onChange={(e) => update({ model: e.target.value })}
             >
-              {config.models.map((m) => (
+              {(settings.policy === "nous" ? config.nous_models : config.models).map((m) => (
                 <option key={m}>{m}</option>
               ))}
             </select>
@@ -140,13 +150,13 @@ export function EpisodeControls() {
           checked={settings.supervised}
           onChange={(v) => update({ supervised: v })}
           label="Approve each action"
-          hint="Supervised autopilot: Claude proposes, you approve or correct (DAgger-style)."
+          hint="Supervised autopilot: the LLM proposes, you approve or correct (DAgger-style)."
         />
         <Toggle
           checked={settings.useScreenshot}
           onChange={(v) => update({ useScreenshot: v })}
-          label="Send screenshot to Claude"
-          hint="Adds the page screenshot to the prompt (multimodal observation). Applies on next reset."
+          label="Send screenshot to LLM"
+          hint="Adds the page screenshot for multimodal Claude models. Nous currently uses AXTree text only. Applies on next reset."
         />
         <Toggle
           checked={!settings.headless}

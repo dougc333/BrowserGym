@@ -1,4 +1,4 @@
-# Claude-as-controller demo for BrowserGym.
+# llm-as-controller demo for BrowserGym.
 # Run these from this folder (claude_controller_demo/).
 
 MINIWOB_DIR  ?= $(abspath ../miniwob-plusplus)

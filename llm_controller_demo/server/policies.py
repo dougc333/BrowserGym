@@ -15,10 +15,14 @@ Policies: functions from an observation (plus history) to an action.
 
 from __future__ import annotations
 
+import asyncio
+import json
 import os
 import random
 import re
 import time
+import urllib.error
+import urllib.request
 from dataclasses import dataclass, field
 from typing import Awaitable, Callable, Optional
 
@@ -27,6 +31,10 @@ from protocol import Observation, Prompt, Proposal, Usage
 
 DEFAULT_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-5-5")
 AVAILABLE_MODELS = ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"]
+NOUS_BASE_URL = os.environ.get("NOUS_BASE_URL", "https://inference-api.nousresearch.com/v1")
+NOUS_DEFAULT_MODEL = os.environ.get("NOUS_MODEL", "Hermes-4-70B")
+NOUS_MODELS = ["Hermes-4-70B", "Hermes-4-405B"]
+NOUS_TIMEOUT_SECONDS = float(os.environ.get("NOUS_TIMEOUT_SECONDS", "120"))
 
 SYSTEM_PROMPT = """\
 You are the controller of a web browser, acting as a policy in a reinforcement-learning \
@@ -160,6 +168,80 @@ class ClaudePolicy:
         )
 
 
+class NousPolicy:
+    """Nous Portal policy using its OpenAI-compatible chat-completions API."""
+
+    name = "nous"
+
+    def __init__(self) -> None:
+        self.api_key = os.environ.get("NOUS_API_KEY", "")
+        self.base_url = NOUS_BASE_URL.rstrip("/")
+
+    def _complete(self, body: dict) -> dict:
+        request = urllib.request.Request(
+            f"{self.base_url}/chat/completions",
+            data=json.dumps(body).encode(),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.api_key}",
+            },
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=NOUS_TIMEOUT_SECONDS) as response:
+                return json.loads(response.read())
+        except urllib.error.HTTPError as error:
+            detail = error.read().decode(errors="replace")[:1000]
+            raise RuntimeError(f"Nous API returned HTTP {error.code}: {detail}") from error
+
+    async def __call__(
+        self,
+        ctx: PolicyContext,
+        emit: Emit,
+        model: Optional[str] = None,
+        temperature: Optional[float] = None,
+    ) -> Proposal:
+        model = model or NOUS_DEFAULT_MODEL
+        prompt = build_prompt(ctx)
+        body: dict = {
+            "model": model,
+            "max_tokens": 1024,
+            "messages": [
+                {"role": "system", "content": prompt.system},
+                {"role": "user", "content": prompt.user},
+            ],
+        }
+        if temperature is not None:
+            body["temperature"] = temperature
+
+        t0 = time.time()
+        try:
+            result = await asyncio.wait_for(
+                asyncio.to_thread(self._complete, body), timeout=NOUS_TIMEOUT_SECONDS + 1
+            )
+        except asyncio.TimeoutError as error:
+            raise RuntimeError(
+                f"Nous request exceeded {NOUS_TIMEOUT_SECONDS:g} seconds"
+            ) from error
+        raw = result["choices"][0]["message"].get("content") or ""
+        await emit(raw)
+        thought, action = parse_response(raw)
+        usage = result.get("usage") or {}
+        return Proposal(
+            t=ctx.obs.t,
+            policy="nous",
+            model=model,
+            thought=thought,
+            action=action,
+            raw=raw,
+            prompt=prompt,
+            latency_ms=int((time.time() - t0) * 1000),
+            usage=Usage(
+                input_tokens=usage.get("prompt_tokens", 0),
+                output_tokens=usage.get("completion_tokens", 0),
+            ),
+        )
+
+
 class RandomPolicy:
     name = "random"
 
@@ -189,3 +271,7 @@ class RandomPolicy:
 
 def has_api_key() -> bool:
     return bool(os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"))
+
+
+def has_nous_key() -> bool:
+    return bool(os.environ.get("NOUS_API_KEY"))

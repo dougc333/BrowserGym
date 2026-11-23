@@ -18,7 +18,7 @@ from typing import Literal, Optional, Union
 
 from pydantic import BaseModel, Field
 
-PolicyName = Literal["claude", "random", "human"]
+PolicyName = Literal["claude", "nous", "random", "human"]
 Phase = Literal["idle", "resetting", "observing", "thinking", "awaiting_approval", "acting", "done"]
 
 
