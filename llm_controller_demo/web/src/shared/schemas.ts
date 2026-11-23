@@ -39,7 +39,11 @@ export const Observation = z.object({
 });
 export type Observation = z.infer<typeof Observation>;
 
-export const Prompt = z.object({ system: z.string(), user: z.string() });
+export const Prompt = z.object({
+  system: z.string(),
+  user: z.string(),
+  image: z.string().nullable().optional(), // data URL of the exact screenshot the model saw
+});
 export type Prompt = z.infer<typeof Prompt>;
 
 export const Proposal = z.object({
@@ -106,6 +110,7 @@ export const Config = z.object({
   nous_default_model: z.string(),
   nous_models: z.array(z.string()),
   nous_base_url: z.string(),
+  nous_prices: z.record(z.string(), z.object({ prompt: z.number(), completion: z.number() })).default({}),
   benchmarks: z.array(z.string()),
   action_space: z.string(),
   system_prompt: z.string(),
@@ -146,6 +151,8 @@ export type ServerEvent = z.infer<typeof ServerEvent>;
 // ------------------------------------------------------------------ client -> server
 
 const Temperature = z.number().min(0).max(1).nullable().optional();
+export const REASONING_EFFORTS = ["low", "high", "xhigh", "max"] as const;
+const ReasoningEffort = z.enum(REASONING_EFFORTS).nullable().optional();
 
 export const ClientCommand = z.discriminatedUnion("type", [
   z.object({
@@ -161,6 +168,7 @@ export const ClientCommand = z.discriminatedUnion("type", [
     policy: PolicyName.exclude(["human"]),
     model: z.string().nullable().optional(),
     temperature: Temperature,
+    reasoning_effort: ReasoningEffort,
   }),
   z.object({
     type: z.literal("act"),
@@ -173,6 +181,7 @@ export const ClientCommand = z.discriminatedUnion("type", [
     policy: PolicyName.exclude(["human"]),
     model: z.string().nullable().optional(),
     temperature: Temperature,
+    reasoning_effort: ReasoningEffort,
     supervised: z.boolean(),
   }),
   z.object({ type: z.literal("pause") }),
@@ -183,6 +192,7 @@ export const ClientCommand = z.discriminatedUnion("type", [
     policy: PolicyName.exclude(["human"]),
     model: z.string().nullable().optional(),
     temperature: Temperature,
+    reasoning_effort: ReasoningEffort,
     max_steps: z.number().int().min(1).max(50),
     use_screenshot: z.boolean(),
   }),
@@ -199,6 +209,7 @@ export const Settings = z.object({
   policy: PolicyName.default("claude"),
   model: z.string().nullable().default(null),
   temperature: z.number().min(0).max(1).nullable().default(null),
+  reasoningEffort: z.enum(REASONING_EFFORTS).nullable().default(null),
   supervised: z.boolean().default(true),
   headless: z.boolean().default(true),
   useScreenshot: z.boolean().default(false),
@@ -211,9 +222,21 @@ export type Settings = z.infer<typeof Settings>;
 export const BcFormat = z.enum(["sft_chat", "obs_action", "preference"]);
 export type BcFormat = z.infer<typeof BcFormat>;
 
+// OpenAI-style chat content: a plain string, or text + image parts for screenshot steps.
+export const ChatContent = z.union([
+  z.string(),
+  z.array(
+    z.union([
+      z.object({ type: z.literal("text"), text: z.string() }),
+      z.object({ type: z.literal("image_url"), image_url: z.object({ url: z.string() }) }),
+    ]),
+  ),
+]);
+export type ChatContent = z.infer<typeof ChatContent>;
+
 export const SftChatRow = z.object({
   messages: z.array(
-    z.object({ role: z.enum(["system", "user", "assistant"]), content: z.string() }),
+    z.object({ role: z.enum(["system", "user", "assistant"]), content: ChatContent }),
   ),
   metadata: z.object({
     episode_id: z.string(),
@@ -238,7 +261,7 @@ export const ObsActionRow = z.object({
 });
 
 export const PreferenceRow = z.object({
-  prompt: z.array(z.object({ role: z.enum(["system", "user"]), content: z.string() })),
+  prompt: z.array(z.object({ role: z.enum(["system", "user"]), content: ChatContent })),
   chosen: z.string(),
   rejected: z.string(),
   metadata: z.object({ episode_id: z.string(), task: z.string(), t: z.number() }),

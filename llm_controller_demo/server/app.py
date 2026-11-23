@@ -70,6 +70,7 @@ def get_config() -> dict[str, Any]:
         "nous_default_model": policies.NOUS_DEFAULT_MODEL,
         "nous_models": policies.NOUS_MODELS,
         "nous_base_url": policies.NOUS_BASE_URL,
+        "nous_prices": policies.nous_prices(),
         "benchmarks": env_worker.INSTALLED_BENCHMARKS,
         "action_space": env_worker.ACTION_SET.describe(
             with_long_description=False, with_examples=True
@@ -192,7 +193,13 @@ class Session:
         await self.send("observation", obs=obs.model_dump())
         await self.set_phase("observing")
 
-    async def think(self, policy: str, model: Optional[str], temperature: Optional[float]) -> Proposal:
+    async def think(
+        self,
+        policy: str,
+        model: Optional[str],
+        temperature: Optional[float],
+        reasoning_effort: Optional[str] = None,
+    ) -> Proposal:
         if self.obs is None or self.phase == "done":
             raise RuntimeError("No active episode. Reset an environment first.")
         await self.set_phase("thinking")
@@ -207,7 +214,9 @@ class Session:
         async def emit(delta: str) -> None:
             await self.send("policy_delta", text=delta)
 
-        proposal = await pi(ctx, emit, model=model, temperature=temperature)
+        proposal = await pi(
+            ctx, emit, model=model, temperature=temperature, reasoning_effort=reasoning_effort
+        )
         self.pending = proposal
         await self.send("proposal", proposal=proposal.model_dump())
         await self.set_phase("awaiting_approval")
@@ -233,7 +242,13 @@ class Session:
             action_source=source,  # type: ignore[arg-type]
             prompt=proposal.prompt
             if proposal and proposal.prompt
-            else build_prompt(PolicyContext(obs=o_t, history=list(self.history))),
+            else build_prompt(
+                PolicyContext(
+                    obs=o_t,
+                    history=list(self.history),
+                    use_screenshot=bool(self.reset_cmd and self.reset_cmd.use_screenshot),
+                )
+            ),
             thought=thought or (proposal.thought if proposal else ""),
             reward=result["reward"],
             terminated=result["terminated"],
@@ -279,7 +294,7 @@ class Session:
         """Keep calling think -> act until the episode ends or the user pauses."""
         while self.run_cfg and self.phase == "observing":
             cfg = self.run_cfg
-            proposal = await self.think(cfg.policy, cfg.model, cfg.temperature)
+            proposal = await self.think(cfg.policy, cfg.model, cfg.temperature, cfg.reasoning_effort)
             if cfg.supervised or self.run_cfg is None:
                 return  # wait for the human to approve / edit; `act` resumes the loop
             await self.act(proposal.action, source=cfg.policy, thought=proposal.thought)
@@ -298,7 +313,7 @@ class Session:
                          use_screenshot=cmd.use_screenshot)
             )
             self.run_cfg = RunCmd(type="run", policy=cmd.policy, model=cmd.model,
-                                  temperature=cmd.temperature)
+                                  temperature=cmd.temperature, reasoning_effort=cmd.reasoning_effort)
             await self.autopilot()
             if self.episode and self.episode.ended_at:
                 results.append(self.episode.model_dump(exclude={"steps"}))
@@ -335,7 +350,7 @@ class Session:
         if cmd.type == "reset":
             self.spawn(locked(self.reset(cmd)))
         elif cmd.type == "think":
-            self.spawn(locked(self.think(cmd.policy, cmd.model, cmd.temperature)))
+            self.spawn(locked(self.think(cmd.policy, cmd.model, cmd.temperature, cmd.reasoning_effort)))
         elif cmd.type == "act":
             async def act_then_resume(c: ActCmd = cmd):
                 await self.act(c.action, c.source, c.thought)

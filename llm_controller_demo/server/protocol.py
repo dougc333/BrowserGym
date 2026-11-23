@@ -44,6 +44,7 @@ class Usage(BaseModel):
 class Prompt(BaseModel):
     system: str
     user: str
+    image: Optional[str] = None  # data:image/jpeg;base64,... exactly as the model saw it (grid overlay included)
 
 
 class Proposal(BaseModel):
@@ -111,6 +112,7 @@ class ThinkCmd(BaseModel):
     policy: PolicyName = "claude"
     model: Optional[str] = None
     temperature: Optional[float] = None
+    reasoning_effort: Optional[str] = None  # Nous reasoning models: low|high|xhigh|max
 
 
 class ActCmd(BaseModel):
@@ -125,6 +127,7 @@ class RunCmd(BaseModel):
     policy: PolicyName = "claude"
     model: Optional[str] = None
     temperature: Optional[float] = None
+    reasoning_effort: Optional[str] = None  # Nous reasoning models: low|high|xhigh|max
     supervised: bool = False  # pause for approval before every action
 
 
@@ -139,6 +142,7 @@ class BatchCmd(BaseModel):
     policy: PolicyName = "claude"
     model: Optional[str] = None
     temperature: Optional[float] = None
+    reasoning_effort: Optional[str] = None  # Nous reasoning models: low|high|xhigh|max
     max_steps: int = 10
     use_screenshot: bool = False
 

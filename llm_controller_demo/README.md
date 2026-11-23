@@ -27,7 +27,7 @@ python -m venv .venv && source .venv/bin/activate
 make install                    # BrowserGym core+miniwob, bridge deps, Chromium, npm packages
 make miniwob                    # clones MiniWoB++ to ../miniwob-plusplus
 export ANTHROPIC_API_KEY=sk-ant-...   # optional: without it, use the Random / Human policies
-export NOUS_API_KEY=...               # optional: enables Nous Research Hermes models
+export NOUS_API_KEY=...               # optional: enables Nous Portal models (DeepSeek, etc.)
 make dev                        # bridge on :8000, UI on http://localhost:5173
 ```
 
@@ -40,7 +40,7 @@ Environment variables:
 | `ANTHROPIC_API_KEY` | none | Enables the Claude policy |
 | `CLAUDE_MODEL` | `claude-sonnet-5-5` | Default model (the UI can switch between Haiku, Sonnet, Opus) |
 | `NOUS_API_KEY` | none | Enables the Nous policy through the Nous Portal API |
-| `NOUS_MODEL` | `Hermes-4-70B` | Default Nous model |
+| `NOUS_MODEL` | `deepseek/deepseek-v4.1-flash` | Default Nous model |
 | `NOUS_BASE_URL` | `https://inference-api.nousresearch.com/v1` | Nous OpenAI-compatible endpoint |
 | `NOUS_TIMEOUT_SECONDS` | `120` | Per-request Nous timeout |
 | `MINIWOB_URL` | set by the Makefile | `file://…/miniwob-plusplus/miniwob/html/miniwob/` |
